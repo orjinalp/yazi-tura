@@ -167,6 +167,17 @@ canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('selectstart',e=>e.preventDefault());
 canvas.addEventListener('dragstart',e=>e.preventDefault());
 let W = 0, H = 0, DPR = 1, isMobile = false;
+let safeTop = 0, safeBottom = 0;
+// Probe element to read iOS safe-area insets (notch / Dynamic Island / home indicator).
+const _safeProbe = document.createElement('div');
+_safeProbe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;top:0;left:0;width:0;height:0;'
+  + 'padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);';
+document.body.appendChild(_safeProbe);
+function readSafeInsets() {
+  const cs = getComputedStyle(_safeProbe);
+  safeTop = parseFloat(cs.paddingTop) || 0;
+  safeBottom = parseFloat(cs.paddingBottom) || 0;
+}
 let shopScrollY = 0, shopMaxScroll = 0;
 let R = {};
 let objScale = 1, objTargetScale = 1;
@@ -178,6 +189,7 @@ const PIZZA_ICON_ROTATION = -0.08;
 function resize() {
   W = window.innerWidth; H = window.innerHeight;
   DPR = Math.min(window.devicePixelRatio || 1, 3);
+  readSafeInsets();
   canvas.width = Math.round(W * DPR);
   canvas.height = Math.round(H * DPR);
   canvas.style.width = W + 'px';
@@ -185,18 +197,19 @@ function resize() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   isMobile = W < 640;
   if (isMobile) {
-    R.header   = { x:0, y:0, w:W, h:54 };
+    R.header   = { x:0, y:0, w:W, h:54 + safeTop };
     R.game     = { x:0, y:0, w:W, h:H };
-    R.shop     = { x:0, y:Math.round(H*0.52), w:W, h:Math.round(H*0.48) };
-    R.clickArea= { x:W/2-60, y:70, w:120, h:120 };
-    R.statsY   = 254;
+    R.shop     = { x:0, y:Math.round(H*0.52), w:W, h:Math.round(H*0.48) - safeBottom };
+    R.clickArea= { x:W/2-60, y:70 + safeTop, w:120, h:120 };
+    R.statsY   = 254 + safeTop;
   } else {
     const lw = Math.min(400, Math.round(W * 0.4));
-    R.header   = { x:0, y:0, w:W, h:54 };
-    R.game     = { x:0, y:54, w:lw, h:H-54 };
-    R.shop     = { x:lw, y:54, w:W-lw, h:H-54 };
-    R.clickArea= { x:lw/2-75, y:54+60, w:150, h:150 };
-    R.statsY   = 54+290;
+    const top = 54 + safeTop;
+    R.header   = { x:0, y:0, w:W, h:top };
+    R.game     = { x:0, y:top, w:lw, h:H-top };
+    R.shop     = { x:lw, y:top, w:W-lw, h:H-top-safeBottom };
+    R.clickArea= { x:lw/2-75, y:top+60, w:150, h:150 };
+    R.statsY   = top+290;
   }
 }
 
@@ -407,7 +420,7 @@ function draw() {
 function drawHeader() {
   rr(0,0,W,R.header.h,0,THEME.panel,null);
   ctx.fillStyle = THEME.color+'33'; ctx.fillRect(0,R.header.h-1,W,1);
-  const my = R.header.h/2;
+  const my = safeTop + 27;
 
   headerBtns = [];
   const menuSize = 30;
