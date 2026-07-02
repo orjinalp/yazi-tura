@@ -73,7 +73,7 @@ resize();
 
 // ─── OYUN AKIŞI ──────────────────────────────────────────────────────────────
 let flip = null;   // { active, t, dur, chosen, result, won }
-let toast = { msg: '', color: '', until: 0 };
+let toast = { msg: '', color: '', mode: 'plain', start: 0, until: 0 };
 let adBtn = null;  // kasanın yanındaki reklam çipi (draw içinde hesaplanır)
 
 function money(n) {
@@ -82,7 +82,14 @@ function money(n) {
   const grouped = Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   return (n < 0 ? '-' : '') + grouped + '$';
 }
-function showToast(msg, color) { toast = { msg, color, until: performance.now() + 1600 }; }
+// mode: 'plain' = sonda kısa fade-out (varsayılan)
+//       'in'    = fade-in ile gelir, süresi bitene/yenisi gelene dek kalır
+//       'grow'  = büyüyerek fade-out (kazanma)
+//       'fade'  = yerinde fade-out, büyümez (kaybetme)
+function showToast(msg, color, mode, dur) {
+  const t0 = performance.now();
+  toast = { msg, color, mode: mode || 'plain', start: t0, until: t0 + (dur || 1600) };
+}
 
 function startFlip(chosen) {
   if (flip && flip.active) return;
@@ -94,7 +101,7 @@ function startFlip(chosen) {
     }
     S.kasa -= FLIP_COST;
     save();
-    showToast('Giriş: -' + money(FLIP_COST) + ' kasadan', THEME.ad);
+    showToast('-' + money(FLIP_COST), THEME.ad, 'in', 2000);
   }
   const result = Math.random() < 0.5 ? 'yazi' : 'tura';
   flip = {
@@ -115,11 +122,11 @@ function finishFlip() {
     S.streak++;
     S.pot = potAt(S.streak);            // pot ikiye katlanır
     if (S.streak > S.best) S.best = S.streak;
-    showToast('Doğru! Pot ' + money(S.pot), THEME.win);
+    showToast('KAZANDIN!', THEME.win, 'grow', 1000);
   } else {
     S.streak = 0;
     S.pot = 0;
-    showToast('Yandın! Pot gitti', THEME.lose);
+    showToast('KAYBETTİN', THEME.lose, 'fade', 1000);
   }
   save();
   flip.active = false;
@@ -159,7 +166,7 @@ function layout() {
   const yaziX = cx - cashR - gap - btnR;
   const turaX = cx + cashR + gap + btnR;
 
-  const btnTop = btnY - btnR * 1.12;                // halka payıyla buton üstü
+  const btnTop = btnY - btnR;
   const coinY = H * 0.44;
   const coinR = Math.min(W * 0.25, (btnTop - H * 0.26) * 0.5, 115);
 
@@ -247,19 +254,12 @@ function drawCoin(cx, cy, r, sy, faceLabel, rot) {
 }
 
 // Tam ekrana bakan (90°, perspektifsiz) coin şeklinde buton.
-// Ortadaki 3B para ile aynı malzeme: sarı yüz, çukur daire, kabartma çerçeve;
-// etrafında seçim rengini gösteren halka (yazı mavi / tura kırmızı).
-function drawCoinButton(x, y, r, label, ringColor, sub, disabled) {
+// Ortadaki 3B para ile aynı malzeme: sarı yüz, çukur daire, kabartma çerçeve.
+function drawCoinButton(x, y, r, label, sub, disabled) {
   ctx.save();
   if (disabled) ctx.globalAlpha = 0.4;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-
-  // renkli halka
-  ctx.fillStyle = ringColor;
-  ctx.beginPath();
-  ctx.arc(x, y, r * 1.10, 0, Math.PI * 2);
-  ctx.fill();
 
   // sarı yüz
   const grad = ctx.createLinearGradient(x, y - r, x, y + r);
@@ -415,8 +415,8 @@ function draw(now) {
   const newRound = S.streak === 0;
   const canFlip = !busy && (!newRound || S.kasa >= FLIP_COST);
   const flipSub = newRound ? '-' + money(FLIP_COST) : null;
-  drawCoinButton(L.yaziX, L.btnY, L.btnR, 'YAZI', THEME.yazi, flipSub, !canFlip);
-  drawCoinButton(L.turaX, L.btnY, L.btnR, 'TURA', THEME.tura, flipSub, !canFlip);
+  drawCoinButton(L.yaziX, L.btnY, L.btnR, 'YAZI', flipSub, !canFlip);
+  drawCoinButton(L.turaX, L.btnY, L.btnR, 'TURA', flipSub, !canFlip);
 
   // ortada $ butonu: ÇEKİL — altında pot tutarı
   const canCash = !busy && S.pot > 0;
@@ -428,14 +428,22 @@ function draw(now) {
   ctx.fillText(canCash ? 'ÇEKİL ' + money(S.pot) : 'ÇEKİL', L.cashX, L.cashY + L.cashR + 15);
   ctx.restore();
 
-  // toast
+  // toast / duyuru — coin'in üstünde
   if (toast.until > now) {
-    const a = Math.min(1, (toast.until - now) / 400);
+    const p = Math.min(1, (now - toast.start) / (toast.until - toast.start));
+    let a = 1, scale = 1;
+    if (toast.mode === 'in')        a = Math.min(1, (now - toast.start) / 300);
+    else if (toast.mode === 'grow') { a = 1 - p; scale = 1 + p * 0.9; }
+    else if (toast.mode === 'fade') a = 1 - p;
+    else                            a = Math.min(1, (toast.until - now) / 400);
+    ctx.save();
     ctx.globalAlpha = a;
+    ctx.translate(L.cx, L.coinY - L.coinR - 34);
+    ctx.scale(scale, scale);
     ctx.fillStyle = toast.color || THEME.text;
     ctx.font = `800 ${Math.floor(Math.min(W * 0.06, 26))}px 'Segoe UI', sans-serif`;
-    ctx.fillText(toast.msg, L.cx, L.coinY - L.coinR - 34);
-    ctx.globalAlpha = 1;
+    ctx.fillText(toast.msg, 0, 0);
+    ctx.restore();
   }
 }
 
