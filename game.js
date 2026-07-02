@@ -44,6 +44,7 @@ function defaultState() {
 }
 
 let S = load() || defaultState();
+window.S = S; // menü (menu.js) durumu okuyabilsin
 
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 function load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
@@ -111,6 +112,8 @@ function cashOut() {
   S.pot = 0;
   S.streak = 0;
   save();
+  // liderlik servisine skoru bildir (şimdilik dummy, fire-and-forget)
+  if (window.Leaderboard) window.Leaderboard.submitScore({ best: S.best, kasa: S.kasa });
   showToast('Çekildin: +' + money(amount) + ' kasaya', THEME.cash);
 }
 

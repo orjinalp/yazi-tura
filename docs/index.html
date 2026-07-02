@@ -15,6 +15,26 @@
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
+
+<!-- Hamburger menü butonu (üst sol) -->
+<button id="menuBtn" aria-label="Menü">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- Menü katmanı (soldan açılan çekmece) -->
+<div id="menuOverlay" class="hidden" aria-hidden="true">
+  <aside id="menuPanel" role="dialog" aria-label="Menü">
+    <header id="menuHeader">
+      <button id="menuBack" class="icon-btn hidden" aria-label="Geri">‹</button>
+      <h2 id="menuTitle">Menü</h2>
+      <button id="menuClose" class="icon-btn" aria-label="Kapat">×</button>
+    </header>
+    <div id="menuBody"></div>
+  </aside>
+</div>
+
+<script src="leaderboard.js"></script>
 <script src="game.js"></script>
+<script src="menu.js"></script>
 </body>
 </html>
