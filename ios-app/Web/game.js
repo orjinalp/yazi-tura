@@ -143,7 +143,7 @@ function cashOut() {
   save();
   // liderlik servisine skoru bildir (şimdilik dummy, fire-and-forget)
   if (window.Leaderboard) window.Leaderboard.submitScore({ best: S.best, kasa: S.kasa });
-  showToast('Çekildin: +' + money(amount) + ' kasaya', THEME.cash);
+  showToast('+' + money(amount), THEME.cash, 'grow', 1000);
 }
 
 function watchAd() {
@@ -424,7 +424,8 @@ function draw(now) {
   ctx.fillText(canCash ? 'ÇEKİL ' + money(S.pot) : 'ÇEKİL', L.cashX, L.cashY + L.cashR + 15);
   ctx.restore();
 
-  // toast / duyuru — coin'in üstünde
+  // toast / duyuru — coin'in altındaki boş alanda (para yukarı fırladığı ve
+  // üstte pot yazısı olduğu için burada hiçbir şeyle üst üste binmez)
   if (toast.until > now) {
     const p = Math.min(1, (now - toast.start) / (toast.until - toast.start));
     let a = 1, scale = 1;
@@ -434,7 +435,7 @@ function draw(now) {
     else                            a = Math.min(1, (toast.until - now) / 400);
     ctx.save();
     ctx.globalAlpha = a;
-    ctx.translate(L.cx, L.coinY - L.coinR - 34);
+    ctx.translate(L.cx, L.coinY + L.coinR + 46);
     ctx.scale(scale, scale);
     ctx.fillStyle = toast.color || THEME.text;
     ctx.font = `800 ${Math.floor(Math.min(W * 0.06, 26))}px 'Segoe UI', sans-serif`;
