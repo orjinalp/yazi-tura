@@ -12,7 +12,7 @@ an çekilip kasanı büyütürsün. Tüm ilerleme `localStorage` ile cihazda sak
   katlanır**: `pot = 2^seri` → seri 8'de `256$`, seri 9'da `512$`.
 - **ÇEKİL**: biriken potu **kasaya** aktarır (güvenli kâr), seri sıfırlanır.
 - Yanlış bilirsen **pot gider**, seri sıfırlanır.
-- **REKLAM İZLE** (dummy): kasaya **+1$** ekler (kasa biterse buradan devam).
+- Kasa biterse otomatik olarak **1$'a tazelenir** — oyun asla kilitlenmez.
 
 ## Özellikler
 
@@ -22,7 +22,7 @@ an çekilip kasanı büyütürsün. Tüm ilerleme `localStorage` ile cihazda sak
   Koşulları, Destek, Hakkında
 - Liderlik tablosu için servis katmanı (`leaderboard.js`) — şimdilik dummy, gerçek
   backend'e geçmeye hazır
-- Mobil dokunmatik + masaüstü klavye (`Y` Yazı, `T` Tura, `C` Çekil, `R` Reklam)
+- Mobil dokunmatik + masaüstü klavye (`Y` Yazı, `T` Tura, `C` Çekil)
 - PWA: ana ekrana ekleyip tam ekran oynanabilir
 - iOS native sarmalayıcı (`ios-app/`) — tamamen çevrimdışı `WKWebView`
 

@@ -3,7 +3,7 @@
 // Doğru bildikçe seri (streak) büyür ve pot İKİYE KATLANIR: pot = 2^seri.
 //   seri 1 → $2, seri 2 → $4, ... seri 8 → $256, seri 9 → $512
 // İstediğin an ÇEKİL ile pot'u kasaya aktarırsın; yanılırsan pot gider.
-// REKLAM İZLE (dummy) kasaya +$1 ekler. Başlangıç kasası $1'dır.
+// Başlangıç kasası $1'dır; kasa biterse otomatik $1'a tazelenir (kilitlenme yok).
 
 // ─── TEMA ────────────────────────────────────────────────────────────────────
 const THEME = {
@@ -18,14 +18,13 @@ const THEME = {
   yazi:   '#4dabf7',
   tura:   '#ff6b6b',
   cash:   '#51cf66',   // Çekil
-  ad:     '#ffa94d',   // Reklam izle
+  ad:     '#ffa94d',   // bilgi/uyarı (turuncu)
   win:    '#51cf66',
   lose:   '#ff6b6b',
   potc:   '#ffd43b',   // pot rengi
 };
 
 // ─── EKONOMİ ─────────────────────────────────────────────────────────────────
-const AD_REWARD = 1.00;   // reklam ödülü (dummy)
 const FLIP_COST = 1.00;   // yeni tura giriş ücreti (kasadan düşer)
 // Pot her doğru tahminde ikiye katlanır: seri n → 2^n dolar.
 function potAt(streak) { return streak <= 0 ? 0 : Math.pow(2, streak); }
@@ -46,6 +45,8 @@ function defaultState() {
 }
 
 let S = load() || defaultState();
+// kasa bittiyse tazele — giriş ücreti ödenemezse oyun kilitlenmesin
+if (S.kasa < FLIP_COST && S.pot <= 0) S.kasa = FLIP_COST;
 window.S = S; // menü (menu.js) durumu okuyabilsin
 
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -86,7 +87,7 @@ function startFlip(chosen) {
   // yeni tura başlıyorsa (seri 0) kasadan giriş ücreti al
   if (S.streak === 0) {
     if (S.kasa < FLIP_COST) {
-      showToast('Kasa yetersiz! Reklam izle: +' + money(AD_REWARD), THEME.lose);
+      showToast('Kasa yetersiz!', THEME.lose);
       return;
     }
     S.kasa -= FLIP_COST;
@@ -109,7 +110,12 @@ function finishFlip() {
   } else {
     S.streak = 0;
     S.pot = 0;
-    showToast('Yandın! Pot gitti', THEME.lose);
+    if (S.kasa < FLIP_COST) {
+      S.kasa = FLIP_COST; // batma yok: kasa tazelenir
+      showToast('Yandın! Pot gitti • kasa tazelendi', THEME.lose);
+    } else {
+      showToast('Yandın! Pot gitti', THEME.lose);
+    }
   }
   save();
   flip.active = false;
@@ -129,13 +135,6 @@ function cashOut() {
   showToast('Çekildin: +' + money(amount) + ' kasaya', THEME.cash);
 }
 
-function watchAd() {
-  if (flip && flip.active) return;
-  S.kasa += AD_REWARD;
-  save();
-  showToast('Reklam ödülü: +' + money(AD_REWARD), THEME.ad);
-}
-
 // ─── DÜZEN ───────────────────────────────────────────────────────────────────
 function layout() {
   const cx = W / 2;
@@ -149,7 +148,7 @@ function layout() {
   const leftX = sideM;
   const rightX = sideM + btnW + colGap;
 
-  const row2Y = H - bottomM - btnH;          // Çekil / Reklam
+  const row2Y = H - bottomM - btnH;          // Çekil (tam genişlik)
   const row1Y = row2Y - rowGap - btnH;       // Yazı / Tura
 
   const coinY = H * 0.44;
@@ -307,10 +306,9 @@ function draw(now) {
   drawButton(L.leftX, L.row1Y, L.btnW, L.btnH, 'YAZI', flipSub, THEME.yazi, !canFlip);
   drawButton(L.rightX, L.row1Y, L.btnW, L.btnH, 'TURA', flipSub, THEME.tura, !canFlip);
 
-  // butonlar — satır 2: Çekil / Reklam
+  // butonlar — satır 2: Çekil (tam genişlik)
   const canCash = !busy && S.pot > 0;
-  drawButton(L.leftX, L.row2Y, L.btnW, L.btnH, 'ÇEKİL', money(S.pot), THEME.cash, !canCash);
-  drawButton(L.rightX, L.row2Y, L.btnW, L.btnH, 'REKLAM İZLE', '+' + money(AD_REWARD), THEME.ad, busy);
+  drawButton(L.leftX, L.row2Y, W - L.sideM * 2, L.btnH, 'ÇEKİL', money(S.pot), THEME.cash, !canCash);
 
   // toast
   if (toast.until > now) {
@@ -344,8 +342,7 @@ function onTap(px, py) {
   const L = layout();
   if (inRect(px, py, L.leftX,  L.row1Y, L.btnW, L.btnH)) return startFlip('yazi');
   if (inRect(px, py, L.rightX, L.row1Y, L.btnW, L.btnH)) return startFlip('tura');
-  if (inRect(px, py, L.leftX,  L.row2Y, L.btnW, L.btnH)) return cashOut();
-  if (inRect(px, py, L.rightX, L.row2Y, L.btnW, L.btnH)) return watchAd();
+  if (inRect(px, py, L.leftX,  L.row2Y, W - L.sideM * 2, L.btnH)) return cashOut();
 }
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -354,11 +351,10 @@ canvas.addEventListener('pointerdown', (e) => {
   onTap(e.clientX - rect.left, e.clientY - rect.top);
 }, { passive: false });
 
-// klavye kısayolları (masaüstü): Y=yazı, T=tura, C=çekil, R=reklam
+// klavye kısayolları (masaüstü): Y=yazı, T=tura, C=çekil
 window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (k === 'y') startFlip('yazi');
   else if (k === 't') startFlip('tura');
   else if (k === 'c') cashOut();
-  else if (k === 'r') watchAd();
 });

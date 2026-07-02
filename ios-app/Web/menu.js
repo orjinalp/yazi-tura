@@ -143,9 +143,9 @@
       rekor) yalnızca cihazının yerel depolamasında (localStorage) tutulur ve
       hiçbir sunucuya gönderilmez.</p>
       <h3>Reklamlar</h3>
-      <p>Uygulamadaki “Reklam İzle” özelliği şu an bir gösterimdir (dummy) ve
-      üçüncü taraf reklam ağı çalıştırmaz. İleride gerçek reklam ağı entegre
-      edilirse, ilgili ağın veri işleme koşulları bu politikada belirtilecektir.</p>
+      <p>Uygulama reklam içermez ve üçüncü taraf reklam ağı çalıştırmaz.
+      İleride reklam ağı entegre edilirse, ilgili ağın veri işleme koşulları
+      bu politikada belirtilecektir.</p>
       <h3>Çocukların Gizliliği</h3>
       <p>Uygulama, 13 yaş altı çocuklardan bilerek veri toplamaz.</p>
       <h3>İletişim</h3>
