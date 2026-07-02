@@ -71,14 +71,10 @@ let flip = null;   // { active, t, dur, chosen, result, won }
 let toast = { msg: '', color: '', until: 0 };
 
 function money(n) {
-  n = Math.round(n * 100) / 100;
-  // büyük tutarları okunur kısalt (1.02K, 1.05M)
-  if (n >= 1000) {
-    const u = ['', 'K', 'M', 'B', 'T'];
-    const i = Math.min(Math.floor(Math.log10(n) / 3), u.length - 1);
-    return '$' + (n / Math.pow(1000, i)).toFixed(2) + u[i];
-  }
-  return '$' + n.toFixed(2);
+  n = Math.round(n);
+  // binlik ayraç olarak nokta, $ sona: 32.746.736$
+  const grouped = Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (n < 0 ? '-' : '') + grouped + '$';
 }
 function showToast(msg, color) { toast = { msg, color, until: performance.now() + 1600 }; }
 
