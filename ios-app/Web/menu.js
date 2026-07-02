@@ -179,7 +179,7 @@
 
     about: `<div class="page">
       <h3>${APP_NAME}</h3>
-      <p>Seri yaptıkça pot ikiye katlanan, canvas tabanlı bir yazı-tura oyunu.
+      <p>Seri yaptıkça pot ikiye katlanan bir yazı-tura şans oyunu.
       Doğru bildikçe kasanı büyüt, istediğin an çekil.</p>
       <p class="muted">Sürüm ${APP_VERSION}</p>
     </div>`,
