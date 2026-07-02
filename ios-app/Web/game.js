@@ -176,28 +176,29 @@ function roundRect(x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawCoin(cx, cy, r, scaleX, faceLabel, rot) {
+// sy: dikey basıklık (perspektif) — 1 = tam yüz, küçüldükçe yatık/yan görünüm
+function drawCoin(cx, cy, r, sy, faceLabel, rot) {
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rot || 0);
-  const w = Math.max(2, r * scaleX);
+  const h = Math.max(2, r * sy);
 
-  // kenar kalınlığı — para yan döndükçe belirginleşir (3B hissi)
-  const th = (1 - scaleX) * r * 0.18;
+  // kenar kalınlığı — yatık duran/dönen parada alttan görünür (3B hissi)
+  const th = (1 - sy) * r * 0.22;
   if (th > 0.5) {
     ctx.fillStyle = THEME.goldLo;
     ctx.beginPath();
-    ctx.ellipse(th, 0, w, r, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, th, r, h, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  const grad = ctx.createLinearGradient(-w, -r, w, r);
+  const grad = ctx.createLinearGradient(-r, -h, r, h);
   grad.addColorStop(0, THEME.goldLo);
   grad.addColorStop(0.5, THEME.gold);
   grad.addColorStop(1, THEME.goldHi);
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.ellipse(0, 0, w, r, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, r, h, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.lineWidth = Math.max(2, r * 0.06);
@@ -207,16 +208,19 @@ function drawCoin(cx, cy, r, scaleX, faceLabel, rot) {
   ctx.lineWidth = 2;
   ctx.strokeStyle = 'rgba(255,255,255,0.35)';
   ctx.beginPath();
-  ctx.ellipse(0, 0, w * 0.82, r * 0.82, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, r * 0.82, h * 0.82, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  if (scaleX > 0.35) {
-    ctx.globalAlpha = Math.min(1, (scaleX - 0.35) / 0.3);
+  if (sy > 0.30) {
+    ctx.globalAlpha = Math.min(1, (sy - 0.30) / 0.3);
     ctx.fillStyle = '#5a4200';
     ctx.font = `700 ${Math.floor(r * 0.42)}px 'Segoe UI', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.save();
+    ctx.scale(1, sy); // yazı da perspektifle bassın
     ctx.fillText(faceLabel, 0, 0);
+    ctx.restore();
     ctx.globalAlpha = 1;
   }
   ctx.restore();
@@ -278,19 +282,21 @@ function draw(now) {
   ctx.fillStyle = THEME.dim;
   ctx.fillText(`Kazanırsan pot: ${money(nextPot)}   (Rekor seri: ${S.best})`, L.cx, H * 0.215 + 26);
 
-  // para animasyonu — 3B savrulma: yükselir, takla atar, yalpalar, ortaya döner
-  let scaleX = 1, faceLabel = 'YAZI', bob = 0, dx = 0, rot = 0, air = 0;
+  // para animasyonu — yukarı fırlar, yatay eksende takla atar; sağa-sola en
+  // fazla azıcık kayar. Yerdeyken perspektifli (yatık) durur.
+  const TILT = 0.74;   // yerde duran paranın dikey basıklığı (1 = tam yüz)
+  let sy = TILT, faceLabel = 'YAZI', bob = 0, dx = 0, rot = 0, air = 0;
   if (flip) {
     const p = Math.min(flip.t / flip.dur, 1);
     const ang = p * Math.PI * 4;
-    scaleX = Math.abs(Math.cos(ang));
     faceLabel = (Math.floor(ang / Math.PI) % 2 === 0) ? 'YAZI' : 'TURA';
     if (p >= 1) faceLabel = flip.result === 'tura' ? 'TURA' : 'YAZI';
     air = Math.sin(p * Math.PI);                    // 0 → 1 → 0 (havadalık)
-    bob = -air * (H * 0.10);
-    const maxDrift = Math.max(0, W / 2 - L.coinR - 30);
-    dx = air * flip.driftX * maxDrift;              // savrulur, sonda ortaya döner
-    rot = flip.dir * p * Math.PI * 2 * flip.spins   // takla: sonda tam tur = düz durur
+    // yatay eksen etrafında takla (dikey basıklık); sonda yine yatık oturur
+    sy = (TILT + (1 - TILT) * air) * Math.abs(Math.cos(ang));
+    bob = -air * (H * 0.12);
+    dx = air * flip.driftX * Math.min(18, W * 0.05); // azıcık sağ / azıcık sol
+    rot = flip.dir * p * Math.PI * 2 * flip.spins   // takla: sonda tam tur = düz
         + air * flip.wobble;                        // havadayken eksen yalpası
   }
 
@@ -299,13 +305,13 @@ function draw(now) {
   ctx.globalAlpha = 0.25 * (1 - air * 0.6);
   ctx.fillStyle = '#000';
   ctx.beginPath();
-  ctx.ellipse(L.cx + dx, L.coinY + L.coinR + 24,
+  ctx.ellipse(L.cx + dx, L.coinY + L.coinR * TILT + 18,
               L.coinR * (0.9 - air * 0.35), L.coinR * 0.15 * (1 - air * 0.4),
               0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  drawCoin(L.cx + dx, L.coinY + bob, L.coinR, scaleX, faceLabel, rot);
+  drawCoin(L.cx + dx, L.coinY + bob, L.coinR, sy, faceLabel, rot);
 
   // yönerge / durum
   const busy = flip && flip.active;
