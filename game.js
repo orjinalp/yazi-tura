@@ -74,6 +74,7 @@ resize();
 // ─── OYUN AKIŞI ──────────────────────────────────────────────────────────────
 let flip = null;   // { active, t, dur, chosen, result, won }
 let toast = { msg: '', color: '', until: 0 };
+let adBtn = null;  // kasanın yanındaki reklam çipi (draw içinde hesaplanır)
 
 function money(n) {
   n = Math.round(n);
@@ -287,12 +288,20 @@ function draw(now) {
   ctx.fillText('YAZI TURA', L.cx, H * 0.075);
 
   // KASA (banka)
+  const busy = flip && flip.active;
   ctx.fillStyle = THEME.dim;
   ctx.font = `600 ${Math.floor(Math.min(W * 0.034, 14))}px 'Segoe UI', sans-serif`;
   ctx.fillText('KASA', L.cx, H * 0.125);
   ctx.fillStyle = THEME.cash;
   ctx.font = `800 ${Math.floor(Math.min(W * 0.10, 44))}px 'Segoe UI', sans-serif`;
   ctx.fillText(money(S.kasa), L.cx, H * 0.165);
+
+  // reklam çipi — kasanın hemen yanında, +1$ ekler
+  const kasaW = ctx.measureText(money(S.kasa)).width;
+  const chipH = Math.min(34, H * 0.045);
+  const chipW = chipH * 2.2;
+  adBtn = { x: L.cx + kasaW / 2 + 12, y: H * 0.165 - chipH / 2, w: chipW, h: chipH };
+  drawButton(adBtn.x, adBtn.y, adBtn.w, adBtn.h, '📺 +1$', null, THEME.ad, busy);
 
   // seri / pot / kazanırsan pot
   const nextPot = potAt(S.streak + 1);
@@ -334,25 +343,6 @@ function draw(now) {
 
   drawCoin(L.cx + dx, L.coinY + bob, L.coinR, sy, faceLabel, rot);
 
-  // yönerge / durum
-  const busy = flip && flip.active;
-  ctx.font = `600 ${Math.floor(Math.min(W * 0.038, 15))}px 'Segoe UI', sans-serif`;
-  const hintY = L.row1Y - 20;
-  if (busy) {
-    ctx.fillStyle = THEME.dim;
-    ctx.fillText('Para havada...', L.cx, hintY);
-  } else if (flip) {
-    ctx.fillStyle = flip.won ? THEME.win : THEME.lose;
-    const rName = flip.result === 'tura' ? 'TURA' : 'YAZI';
-    ctx.fillText(`${rName} geldi — ${flip.won ? 'doğru!' : 'yandın'}`, L.cx, hintY);
-  } else {
-    ctx.fillStyle = THEME.dim;
-    const hint = S.streak === 0
-      ? `Bir taraf seç (giriş: ${money(FLIP_COST)} kasadan) • pot büyüdükçe çekilmeyi düşün`
-      : 'Bir taraf seç • pot büyüdükçe çekilmeyi düşün';
-    ctx.fillText(hint, L.cx, hintY);
-  }
-
   // butonlar — satır 1: Yazı / Tura (yeni turda giriş ücreti göster)
   const newRound = S.streak === 0;
   const canFlip = !busy && (!newRound || S.kasa >= FLIP_COST);
@@ -360,10 +350,9 @@ function draw(now) {
   drawButton(L.leftX, L.row1Y, L.btnW, L.btnH, 'YAZI', flipSub, THEME.yazi, !canFlip);
   drawButton(L.rightX, L.row1Y, L.btnW, L.btnH, 'TURA', flipSub, THEME.tura, !canFlip);
 
-  // butonlar — satır 2: Çekil / Reklam
+  // butonlar — satır 2: Çekil (tam genişlik)
   const canCash = !busy && S.pot > 0;
-  drawButton(L.leftX, L.row2Y, L.btnW, L.btnH, 'ÇEKİL', money(S.pot), THEME.cash, !canCash);
-  drawButton(L.rightX, L.row2Y, L.btnW, L.btnH, 'REKLAM İZLE', '+' + money(AD_REWARD), THEME.ad, busy);
+  drawButton(L.leftX, L.row2Y, W - L.sideM * 2, L.btnH, 'ÇEKİL', money(S.pot), THEME.cash, !canCash);
 
   // toast
   if (toast.until > now) {
@@ -397,8 +386,8 @@ function onTap(px, py) {
   const L = layout();
   if (inRect(px, py, L.leftX,  L.row1Y, L.btnW, L.btnH)) return startFlip('yazi');
   if (inRect(px, py, L.rightX, L.row1Y, L.btnW, L.btnH)) return startFlip('tura');
-  if (inRect(px, py, L.leftX,  L.row2Y, L.btnW, L.btnH)) return cashOut();
-  if (inRect(px, py, L.rightX, L.row2Y, L.btnW, L.btnH)) return watchAd();
+  if (inRect(px, py, L.leftX,  L.row2Y, W - L.sideM * 2, L.btnH)) return cashOut();
+  if (adBtn && inRect(px, py, adBtn.x, adBtn.y, adBtn.w, adBtn.h)) return watchAd();
 }
 
 canvas.addEventListener('pointerdown', (e) => {
