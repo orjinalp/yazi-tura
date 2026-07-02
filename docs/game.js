@@ -94,7 +94,7 @@ function startFlip(chosen) {
     showToast('Giriş: -' + money(FLIP_COST) + ' kasadan', THEME.ad);
   }
   const result = Math.random() < 0.5 ? 'yazi' : 'tura';
-  flip = { active: true, t: 0, dur: 1500 + Math.random() * 400, chosen, result, won: chosen === result };
+  flip = { active: true, t: 0, dur: 500, chosen, result, won: chosen === result };
 }
 
 function finishFlip() {
@@ -273,7 +273,7 @@ function draw(now) {
   let scaleX = 1, faceLabel = 'YAZI', bob = 0;
   if (flip) {
     const p = Math.min(flip.t / flip.dur, 1);
-    const ang = p * Math.PI * 7;
+    const ang = p * Math.PI * 4;
     scaleX = Math.abs(Math.cos(ang));
     faceLabel = (Math.floor(ang / Math.PI) % 2 === 0) ? 'YAZI' : 'TURA';
     if (p >= 1) faceLabel = flip.result === 'tura' ? 'TURA' : 'YAZI';
