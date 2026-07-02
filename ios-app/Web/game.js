@@ -149,23 +149,21 @@ function watchAd() {
 // ─── DÜZEN ───────────────────────────────────────────────────────────────────
 function layout() {
   const cx = W / 2;
-  const sideM = 22;
-  const colGap = 14;
-  const btnH = Math.min(60, H * 0.075);
-  const rowGap = 12;
-  const bottomM = Math.max(26, H * 0.045);
+  const bottomM = Math.max(24, H * 0.04);
 
-  const btnW = (W - sideM * 2 - colGap) / 2;
-  const leftX = sideM;
-  const rightX = sideM + btnW + colGap;
+  // alt sıra: iki coin buton (YAZI / TURA), ortalarında $ (ÇEKİL)
+  const btnR = Math.min(W * 0.16, H * 0.10, 84);   // coin buton yarıçapı
+  const cashR = btnR * 0.62;                        // $ butonu yarıçapı
+  const gap = Math.max(10, W * 0.03);
+  const btnY = H - bottomM - btnR;
+  const yaziX = cx - cashR - gap - btnR;
+  const turaX = cx + cashR + gap + btnR;
 
-  const row2Y = H - bottomM - btnH;          // Çekil / Reklam
-  const row1Y = row2Y - rowGap - btnH;       // Yazı / Tura
-
+  const btnTop = btnY - btnR * 1.12;                // halka payıyla buton üstü
   const coinY = H * 0.44;
-  const coinR = Math.min(W * 0.25, (row1Y - H * 0.26) * 0.5, 115);
+  const coinR = Math.min(W * 0.25, (btnTop - H * 0.26) * 0.5, 115);
 
-  return { cx, sideM, btnW, btnH, leftX, rightX, row1Y, row2Y, coinY, coinR };
+  return { cx, btnR, btnY, yaziX, turaX, cashX: cx, cashY: btnY, cashR, coinY, coinR };
 }
 
 // ─── ÇİZİM ───────────────────────────────────────────────────────────────────
@@ -245,6 +243,76 @@ function drawCoin(cx, cy, r, sy, faceLabel, rot) {
     ctx.restore();
     ctx.globalAlpha = 1;
   }
+  ctx.restore();
+}
+
+// Tam ekrana bakan (90°, perspektifsiz) coin şeklinde buton.
+// Ortadaki 3B para ile aynı malzeme: sarı yüz, çukur daire, kabartma çerçeve;
+// etrafında seçim rengini gösteren halka (yazı mavi / tura kırmızı).
+function drawCoinButton(x, y, r, label, ringColor, sub, disabled) {
+  ctx.save();
+  if (disabled) ctx.globalAlpha = 0.4;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // renkli halka
+  ctx.fillStyle = ringColor;
+  ctx.beginPath();
+  ctx.arc(x, y, r * 1.10, 0, Math.PI * 2);
+  ctx.fill();
+
+  // sarı yüz
+  const grad = ctx.createLinearGradient(x, y - r, x, y + r);
+  grad.addColorStop(0, THEME.coinFaceHi);
+  grad.addColorStop(1, THEME.coinFace);
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = Math.max(2, r * 0.05);
+  ctx.strokeStyle = THEME.coinRim;
+  ctx.stroke();
+
+  // içteki çukur daire
+  ctx.fillStyle = THEME.coinInner;
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.78, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = THEME.coinRim;
+  ctx.stroke();
+
+  // yüz yazısı (+ yeni turda giriş ücreti)
+  ctx.fillStyle = '#a5690a';
+  if (sub) {
+    ctx.font = `700 ${Math.floor(r * 0.38)}px 'Segoe UI', sans-serif`;
+    ctx.fillText(label, x, y - r * 0.12);
+    ctx.fillStyle = '#c06a1a';
+    ctx.font = `700 ${Math.floor(r * 0.26)}px 'Segoe UI', sans-serif`;
+    ctx.fillText(sub, x, y + r * 0.32);
+  } else {
+    ctx.font = `700 ${Math.floor(r * 0.42)}px 'Segoe UI', sans-serif`;
+    ctx.fillText(label, x, y);
+  }
+  ctx.restore();
+}
+
+// Yuvarlak yeşil $ butonu — ÇEKİL.
+function drawCashButton(x, y, r, disabled) {
+  ctx.save();
+  if (disabled) ctx.globalAlpha = 0.4;
+  ctx.fillStyle = THEME.cash;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = Math.max(2, r * 0.09);
+  ctx.strokeStyle = '#2f9e44';
+  ctx.stroke();
+  ctx.fillStyle = '#0b1020';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `800 ${Math.floor(r * 1.15)}px 'Segoe UI', sans-serif`;
+  ctx.fillText('$', x, y + r * 0.04);
   ctx.restore();
 }
 
@@ -343,16 +411,22 @@ function draw(now) {
 
   drawCoin(L.cx + dx, L.coinY + bob, L.coinR, sy, faceLabel, rot);
 
-  // butonlar — satır 1: Yazı / Tura (yeni turda giriş ücreti göster)
+  // butonlar — iki coin: YAZI / TURA (yeni turda giriş ücreti göster)
   const newRound = S.streak === 0;
   const canFlip = !busy && (!newRound || S.kasa >= FLIP_COST);
   const flipSub = newRound ? '-' + money(FLIP_COST) : null;
-  drawButton(L.leftX, L.row1Y, L.btnW, L.btnH, 'YAZI', flipSub, THEME.yazi, !canFlip);
-  drawButton(L.rightX, L.row1Y, L.btnW, L.btnH, 'TURA', flipSub, THEME.tura, !canFlip);
+  drawCoinButton(L.yaziX, L.btnY, L.btnR, 'YAZI', THEME.yazi, flipSub, !canFlip);
+  drawCoinButton(L.turaX, L.btnY, L.btnR, 'TURA', THEME.tura, flipSub, !canFlip);
 
-  // butonlar — satır 2: Çekil (tam genişlik)
+  // ortada $ butonu: ÇEKİL — altında pot tutarı
   const canCash = !busy && S.pot > 0;
-  drawButton(L.leftX, L.row2Y, W - L.sideM * 2, L.btnH, 'ÇEKİL', money(S.pot), THEME.cash, !canCash);
+  drawCashButton(L.cashX, L.cashY, L.cashR, !canCash);
+  ctx.save();
+  if (!canCash) ctx.globalAlpha = 0.4;
+  ctx.fillStyle = THEME.cash;
+  ctx.font = `700 ${Math.floor(Math.min(W * 0.032, 13))}px 'Segoe UI', sans-serif`;
+  ctx.fillText(canCash ? 'ÇEKİL ' + money(S.pot) : 'ÇEKİL', L.cashX, L.cashY + L.cashR + 15);
+  ctx.restore();
 
   // toast
   if (toast.until > now) {
@@ -381,12 +455,13 @@ requestAnimationFrame(loop);
 
 // ─── GİRİŞ ───────────────────────────────────────────────────────────────────
 function inRect(px, py, x, y, w, h) { return px >= x && px <= x + w && py >= y && py <= y + h; }
+function inCircle(px, py, x, y, r) { const dx = px - x, dy = py - y; return dx * dx + dy * dy <= r * r; }
 
 function onTap(px, py) {
   const L = layout();
-  if (inRect(px, py, L.leftX,  L.row1Y, L.btnW, L.btnH)) return startFlip('yazi');
-  if (inRect(px, py, L.rightX, L.row1Y, L.btnW, L.btnH)) return startFlip('tura');
-  if (inRect(px, py, L.leftX,  L.row2Y, W - L.sideM * 2, L.btnH)) return cashOut();
+  if (inCircle(px, py, L.yaziX, L.btnY, L.btnR * 1.10)) return startFlip('yazi');
+  if (inCircle(px, py, L.turaX, L.btnY, L.btnR * 1.10)) return startFlip('tura');
+  if (inCircle(px, py, L.cashX, L.cashY, L.cashR * 1.25)) return cashOut();
   if (adBtn && inRect(px, py, adBtn.x, adBtn.y, adBtn.w, adBtn.h)) return watchAd();
 }
 
