@@ -6,11 +6,13 @@ an çekilip kasanı büyütürsün. Tüm ilerleme `localStorage` ile cihazda sak
 
 ## Nasıl oynanır
 
+- Yeni tura başlamak (seri 0'dan ilk tahmin) **kasadan 1$ giriş ücreti** alır;
+  oyuna **1$** kasayla başlarsın.
 - **Yazı** ya da **Tura** seç. Doğru bilirsen **seri** büyür ve **pot ikiye
   katlanır**: `pot = 2^seri` → seri 8'de `256$`, seri 9'da `512$`.
 - **ÇEKİL**: biriken potu **kasaya** aktarır (güvenli kâr), seri sıfırlanır.
 - Yanlış bilirsen **pot gider**, seri sıfırlanır.
-- **REKLAM İZLE** (dummy): kasaya **+1$** ekler.
+- **REKLAM İZLE** (dummy): kasaya **+1$** ekler (kasa biterse buradan devam).
 
 ## Özellikler
 

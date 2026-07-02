@@ -1,8 +1,9 @@
 // ─── Yazı Tura — Seri & Kasa ──────────────────────────────────────────────────
+// Yeni tura başlamak (seri 0'dan ilk tahmin) kasadan $1 GİRİŞ ücreti alır.
 // Doğru bildikçe seri (streak) büyür ve pot İKİYE KATLANIR: pot = 2^seri.
 //   seri 1 → $2, seri 2 → $4, ... seri 8 → $256, seri 9 → $512
 // İstediğin an ÇEKİL ile pot'u kasaya aktarırsın; yanılırsan pot gider.
-// REKLAM İZLE (dummy) kasaya +$1 ekler.
+// REKLAM İZLE (dummy) kasaya +$1 ekler. Başlangıç kasası $1'dır.
 
 // ─── TEMA ────────────────────────────────────────────────────────────────────
 const THEME = {
@@ -25,6 +26,7 @@ const THEME = {
 
 // ─── EKONOMİ ─────────────────────────────────────────────────────────────────
 const AD_REWARD = 1.00;   // reklam ödülü (dummy)
+const FLIP_COST = 1.00;   // yeni tura giriş ücreti (kasadan düşer)
 // Pot her doğru tahminde ikiye katlanır: seri n → 2^n dolar.
 function potAt(streak) { return streak <= 0 ? 0 : Math.pow(2, streak); }
 
@@ -33,7 +35,7 @@ const KEY = 'yazitura_v2';
 
 function defaultState() {
   return {
-    kasa: 0,        // banka (USD) — kalıcı
+    kasa: 1,        // banka (USD) — kalıcı; başlangıçta $1 (ilk giriş ücreti)
     pot: 0,         // güncel tur birikimi
     streak: 0,      // güncel seri
     best: 0,        // en iyi seri
@@ -81,6 +83,16 @@ function showToast(msg, color) { toast = { msg, color, until: performance.now() 
 
 function startFlip(chosen) {
   if (flip && flip.active) return;
+  // yeni tura başlıyorsa (seri 0) kasadan giriş ücreti al
+  if (S.streak === 0) {
+    if (S.kasa < FLIP_COST) {
+      showToast('Kasa yetersiz! Reklam izle: +' + money(AD_REWARD), THEME.lose);
+      return;
+    }
+    S.kasa -= FLIP_COST;
+    save();
+    showToast('Giriş: -' + money(FLIP_COST) + ' kasadan', THEME.ad);
+  }
   const result = Math.random() < 0.5 ? 'yazi' : 'tura';
   flip = { active: true, t: 0, dur: 1500 + Math.random() * 400, chosen, result, won: chosen === result };
 }
@@ -282,12 +294,18 @@ function draw(now) {
     ctx.fillText(`${rName} geldi — ${flip.won ? 'doğru!' : 'yandın'}`, L.cx, hintY);
   } else {
     ctx.fillStyle = THEME.dim;
-    ctx.fillText('Bir taraf seç • pot büyüdükçe çekilmeyi düşün', L.cx, hintY);
+    const hint = S.streak === 0
+      ? `Bir taraf seç (giriş: ${money(FLIP_COST)} kasadan) • pot büyüdükçe çekilmeyi düşün`
+      : 'Bir taraf seç • pot büyüdükçe çekilmeyi düşün';
+    ctx.fillText(hint, L.cx, hintY);
   }
 
-  // butonlar — satır 1: Yazı / Tura
-  drawButton(L.leftX, L.row1Y, L.btnW, L.btnH, 'YAZI', null, THEME.yazi, busy);
-  drawButton(L.rightX, L.row1Y, L.btnW, L.btnH, 'TURA', null, THEME.tura, busy);
+  // butonlar — satır 1: Yazı / Tura (yeni turda giriş ücreti göster)
+  const newRound = S.streak === 0;
+  const canFlip = !busy && (!newRound || S.kasa >= FLIP_COST);
+  const flipSub = newRound ? '-' + money(FLIP_COST) : null;
+  drawButton(L.leftX, L.row1Y, L.btnW, L.btnH, 'YAZI', flipSub, THEME.yazi, !canFlip);
+  drawButton(L.rightX, L.row1Y, L.btnW, L.btnH, 'TURA', flipSub, THEME.tura, !canFlip);
 
   // butonlar — satır 2: Çekil / Reklam
   const canCash = !busy && S.pot > 0;

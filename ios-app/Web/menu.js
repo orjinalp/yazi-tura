@@ -5,7 +5,6 @@
 (function () {
   const APP_NAME = 'Yazı Tura';
   const APP_VERSION = '1.0.0';
-  const SUPPORT_EMAIL = 'aeceaktas@gmail.com';
 
   const overlay = document.getElementById('menuOverlay');
   const panel   = document.getElementById('menuPanel');
@@ -150,7 +149,8 @@
       <h3>Çocukların Gizliliği</h3>
       <p>Uygulama, 13 yaş altı çocuklardan bilerek veri toplamaz.</p>
       <h3>İletişim</h3>
-      <p>Sorularınız için: <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a></p>
+      <p>Sorularınız için App Store'daki uygulama sayfası üzerinden bize
+      ulaşabilirsiniz.</p>
     </div>`,
 
     terms: `<div class="page">
@@ -171,8 +171,8 @@
 
     support: `<div class="page">
       <h3>Destek & İletişim</h3>
-      <p>Bir sorun mu yaşıyorsun ya da öneri mi vermek istiyorsun? Bize ulaş:</p>
-      <p><a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a></p>
+      <p>Bir sorun mu yaşıyorsun ya da öneri mi vermek istiyorsun? Geri
+      bildirimini App Store'daki uygulama sayfası üzerinden iletebilirsin.</p>
       <h3>Sürüm</h3>
       <p class="muted">${APP_NAME} v${APP_VERSION}</p>
     </div>`,
