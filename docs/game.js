@@ -1,45 +1,52 @@
-// ─── Yazı Tura ──────────────────────────────────────────────────────────────
-// Canvas tabanlı basit yazı-tura (coin flip) oyunu.
-// Oyuncu bir taraf seçer, para havaya atılır ve dönerek düşer.
+// ─── Yazı Tura — Seri & Kasa ──────────────────────────────────────────────────
+// Doğru bildikçe seri (streak) büyür ve pot İKİYE KATLANIR: pot = 2^seri.
+//   seri 1 → $2, seri 2 → $4, ... seri 8 → $256, seri 9 → $512
+// İstediğin an ÇEKİL ile pot'u kasaya aktarırsın; yanılırsan pot gider.
+// REKLAM İZLE (dummy) kasaya +$1 ekler.
 
 // ─── TEMA ────────────────────────────────────────────────────────────────────
 const THEME = {
-  bg1:    '#0b1020',   // arka plan (üst)
-  bg2:    '#131a33',   // arka plan (alt)
-  gold:   '#f4c430',   // paranın ana rengi
-  goldHi: '#ffe98a',   // para parlaklık
-  goldLo: '#b8860b',   // para gölge
-  edge:   '#8a6508',   // para kenarı
-  text:   '#f5f7ff',   // ana metin
-  dim:    '#8b93b5',   // soluk metin
-  yazi:   '#4dabf7',   // Yazı butonu
-  tura:   '#ff6b6b',   // Tura butonu
-  win:    '#51cf66',   // kazanma
-  lose:   '#ff6b6b',   // kaybetme
+  bg1:    '#0b1020',
+  bg2:    '#131a33',
+  gold:   '#f4c430',
+  goldHi: '#ffe98a',
+  goldLo: '#b8860b',
+  edge:   '#8a6508',
+  text:   '#f5f7ff',
+  dim:    '#8b93b5',
+  yazi:   '#4dabf7',
+  tura:   '#ff6b6b',
+  cash:   '#51cf66',   // Çekil
+  ad:     '#ffa94d',   // Reklam izle
+  win:    '#51cf66',
+  lose:   '#ff6b6b',
+  potc:   '#ffd43b',   // pot rengi
 };
 
+// ─── EKONOMİ ─────────────────────────────────────────────────────────────────
+const AD_REWARD = 1.00;   // reklam ödülü (dummy)
+// Pot her doğru tahminde ikiye katlanır: seri n → 2^n dolar.
+function potAt(streak) { return streak <= 0 ? 0 : Math.pow(2, streak); }
+
 // ─── DURUM ───────────────────────────────────────────────────────────────────
-const KEY = 'yazitura_v1';
+const KEY = 'yazitura_v2';
 
 function defaultState() {
   return {
-    total: 0,       // toplam atış
-    yaziCount: 0,   // gelen yazı sayısı
-    turaCount: 0,   // gelen tura sayısı
-    wins: 0,        // doğru tahmin
+    kasa: 0,        // banka (USD) — kalıcı
+    pot: 0,         // güncel tur birikimi
     streak: 0,      // güncel seri
     best: 0,        // en iyi seri
+    total: 0,       // toplam atış
+    wins: 0,        // doğru tahmin
+    cashedOut: 0,   // ömür boyu çekilen toplam
   };
 }
 
 let S = load() || defaultState();
 
-function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
-}
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; }
-}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
 
 // ─── CANVAS ──────────────────────────────────────────────────────────────────
 const canvas = document.getElementById('gameCanvas');
@@ -60,61 +67,84 @@ window.addEventListener('resize', resize);
 resize();
 
 // ─── OYUN AKIŞI ──────────────────────────────────────────────────────────────
-// flip: { active, t, dur, chosen('yazi'|'tura'), result('yazi'|'tura'), won }
-let flip = null;
-let lastResult = null;    // son sonucu paranın üstünde göstermek için
+let flip = null;   // { active, t, dur, chosen, result, won }
 let toast = { msg: '', color: '', until: 0 };
 
-function showToast(msg, color) {
-  toast = { msg, color, until: performance.now() + 1600 };
+function money(n) {
+  n = Math.round(n * 100) / 100;
+  // büyük tutarları okunur kısalt (1.02K, 1.05M)
+  if (n >= 1000) {
+    const u = ['', 'K', 'M', 'B', 'T'];
+    const i = Math.min(Math.floor(Math.log10(n) / 3), u.length - 1);
+    return '$' + (n / Math.pow(1000, i)).toFixed(2) + u[i];
+  }
+  return '$' + n.toFixed(2);
 }
+function showToast(msg, color) { toast = { msg, color, until: performance.now() + 1600 }; }
 
 function startFlip(chosen) {
   if (flip && flip.active) return;
   const result = Math.random() < 0.5 ? 'yazi' : 'tura';
-  const won = chosen === result;
-  flip = {
-    active: true,
-    t: 0,
-    dur: 1500 + Math.random() * 400,
-    chosen,
-    result,
-    won,
-  };
+  flip = { active: true, t: 0, dur: 1500 + Math.random() * 400, chosen, result, won: chosen === result };
 }
 
 function finishFlip() {
   const f = flip;
   S.total++;
-  if (f.result === 'yazi') S.yaziCount++; else S.turaCount++;
   if (f.won) {
     S.wins++;
     S.streak++;
+    S.pot = potAt(S.streak);            // pot ikiye katlanır
     if (S.streak > S.best) S.best = S.streak;
-    showToast('Kazandın! 🎉', THEME.win);
+    showToast('Doğru! Pot ' + money(S.pot), THEME.win);
   } else {
     S.streak = 0;
-    showToast('Kaybettin', THEME.lose);
+    S.pot = 0;
+    showToast('Yandın! Pot gitti', THEME.lose);
   }
-  lastResult = f.result;
   save();
   flip.active = false;
 }
 
-// ─── DÜZEN (buton konumları) ─────────────────────────────────────────────────
+function cashOut() {
+  if (flip && flip.active) return;
+  if (S.pot <= 0) { showToast('Çekilecek pot yok', THEME.dim); return; }
+  const amount = S.pot;
+  S.kasa += amount;
+  S.cashedOut += amount;
+  S.pot = 0;
+  S.streak = 0;
+  save();
+  showToast('Çekildin: +' + money(amount) + ' kasaya', THEME.cash);
+}
+
+function watchAd() {
+  if (flip && flip.active) return;
+  S.kasa += AD_REWARD;
+  save();
+  showToast('Reklam ödülü: +' + money(AD_REWARD), THEME.ad);
+}
+
+// ─── DÜZEN ───────────────────────────────────────────────────────────────────
 function layout() {
   const cx = W / 2;
-  const coinR = Math.min(W * 0.28, H * 0.19, 130);
-  const coinY = H * 0.40;
+  const sideM = 22;
+  const colGap = 14;
+  const btnH = Math.min(60, H * 0.075);
+  const rowGap = 12;
+  const bottomM = Math.max(26, H * 0.045);
 
-  const btnW = Math.min((W - 60) / 2, 220);
-  const btnH = 64;
-  const btnGap = 20;
-  const btnY = H - btnH - Math.max(40, H * 0.08);
-  const yaziX = cx - btnGap / 2 - btnW;
-  const turaX = cx + btnGap / 2;
+  const btnW = (W - sideM * 2 - colGap) / 2;
+  const leftX = sideM;
+  const rightX = sideM + btnW + colGap;
 
-  return { cx, coinR, coinY, btnW, btnH, btnY, yaziX, turaX };
+  const row2Y = H - bottomM - btnH;          // Çekil / Reklam
+  const row1Y = row2Y - rowGap - btnH;       // Yazı / Tura
+
+  const coinY = H * 0.44;
+  const coinR = Math.min(W * 0.25, (row1Y - H * 0.26) * 0.5, 115);
+
+  return { cx, sideM, btnW, btnH, leftX, rightX, row1Y, row2Y, coinY, coinR };
 }
 
 // ─── ÇİZİM ───────────────────────────────────────────────────────────────────
@@ -128,25 +158,19 @@ function roundRect(x, y, w, h, r) {
   ctx.closePath();
 }
 
-// Parayı belirli bir "scaleX" (0..1) ile çizer — dönme yanılsaması için.
-// faceLabel: paranın görünen yüzündeki yazı ('YAZI' / 'TURA')
 function drawCoin(cx, cy, r, scaleX, faceLabel) {
   ctx.save();
   ctx.translate(cx, cy);
-
   const w = Math.max(2, r * scaleX);
 
-  // gölge (yerde)
-  const L = layout();
   ctx.save();
   ctx.globalAlpha = 0.25;
   ctx.fillStyle = '#000';
   ctx.beginPath();
-  ctx.ellipse(0, r + 26, w * 0.9, r * 0.16, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, r + 24, w * 0.9, r * 0.15, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  // paranın gövdesi (elips = yandan görünüm)
   const grad = ctx.createLinearGradient(-w, -r, w, r);
   grad.addColorStop(0, THEME.goldLo);
   grad.addColorStop(0.5, THEME.gold);
@@ -156,19 +180,16 @@ function drawCoin(cx, cy, r, scaleX, faceLabel) {
   ctx.ellipse(0, 0, w, r, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // kenar halkası
   ctx.lineWidth = Math.max(2, r * 0.06);
   ctx.strokeStyle = THEME.edge;
   ctx.stroke();
 
-  // iç halka
   ctx.lineWidth = 2;
   ctx.strokeStyle = 'rgba(255,255,255,0.35)';
   ctx.beginPath();
   ctx.ellipse(0, 0, w * 0.82, r * 0.82, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  // yüz yazısı — sadece para yeterince genişse okunur
   if (scaleX > 0.35) {
     ctx.globalAlpha = Math.min(1, (scaleX - 0.35) / 0.3);
     ctx.fillStyle = '#5a4200';
@@ -178,95 +199,109 @@ function drawCoin(cx, cy, r, scaleX, faceLabel) {
     ctx.fillText(faceLabel, 0, 0);
     ctx.globalAlpha = 1;
   }
-
   ctx.restore();
 }
 
-function drawButton(x, y, w, h, label, color, disabled) {
+function drawButton(x, y, w, h, label, sub, color, disabled) {
   ctx.save();
   if (disabled) ctx.globalAlpha = 0.4;
-  roundRect(x, y, w, h, 16);
+  roundRect(x, y, w, h, 14);
   ctx.fillStyle = color;
   ctx.fill();
   ctx.fillStyle = '#0b1020';
-  ctx.font = `700 ${Math.floor(h * 0.34)}px 'Segoe UI', sans-serif`;
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(label, x + w / 2, y + h / 2 + 1);
+  if (sub) {
+    ctx.font = `700 ${Math.floor(h * 0.30)}px 'Segoe UI', sans-serif`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(label, x + w / 2, y + h * 0.44);
+    ctx.font = `600 ${Math.floor(h * 0.22)}px 'Segoe UI', sans-serif`;
+    ctx.fillText(sub, x + w / 2, y + h * 0.74);
+  } else {
+    ctx.font = `700 ${Math.floor(h * 0.34)}px 'Segoe UI', sans-serif`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x + w / 2, y + h / 2 + 1);
+  }
   ctx.restore();
 }
 
 function draw(now) {
   const L = layout();
 
-  // arka plan
   const bg = ctx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, THEME.bg1);
   bg.addColorStop(1, THEME.bg2);
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // başlık
-  ctx.fillStyle = THEME.text;
-  ctx.font = `800 ${Math.floor(Math.min(W * 0.09, 40))}px 'Segoe UI', sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('YAZI TURA', L.cx, H * 0.10);
 
-  // seri / istatistik satırı
-  ctx.font = `600 ${Math.floor(Math.min(W * 0.038, 16))}px 'Segoe UI', sans-serif`;
+  // başlık
+  ctx.fillStyle = THEME.text;
+  ctx.font = `800 ${Math.floor(Math.min(W * 0.075, 32))}px 'Segoe UI', sans-serif`;
+  ctx.fillText('YAZI TURA', L.cx, H * 0.075);
+
+  // KASA (banka)
   ctx.fillStyle = THEME.dim;
-  ctx.fillText(`Seri: ${S.streak}   •   Rekor: ${S.best}   •   Atış: ${S.total}`, L.cx, H * 0.10 + 34);
+  ctx.font = `600 ${Math.floor(Math.min(W * 0.034, 14))}px 'Segoe UI', sans-serif`;
+  ctx.fillText('KASA', L.cx, H * 0.125);
+  ctx.fillStyle = THEME.cash;
+  ctx.font = `800 ${Math.floor(Math.min(W * 0.10, 44))}px 'Segoe UI', sans-serif`;
+  ctx.fillText(money(S.kasa), L.cx, H * 0.165);
+
+  // seri / pot / kazanırsan pot
+  const nextPot = potAt(S.streak + 1);
+  ctx.font = `700 ${Math.floor(Math.min(W * 0.042, 17))}px 'Segoe UI', sans-serif`;
+  ctx.fillStyle = THEME.potc;
+  ctx.fillText(`Seri ${S.streak}   •   Pot ${money(S.pot)}`, L.cx, H * 0.215);
+  ctx.font = `600 ${Math.floor(Math.min(W * 0.036, 14))}px 'Segoe UI', sans-serif`;
+  ctx.fillStyle = THEME.dim;
+  ctx.fillText(`Kazanırsan pot: ${money(nextPot)}   (Rekor seri: ${S.best})`, L.cx, H * 0.215 + 26);
 
   // para animasyonu
-  let scaleX = 1, faceLabel = lastResult === 'tura' ? 'TURA' : 'YAZI', bob = 0;
+  let scaleX = 1, faceLabel = 'YAZI', bob = 0;
   if (flip) {
     const p = Math.min(flip.t / flip.dur, 1);
-    // ~7 yarım tur; scaleX = |cos| ile yassılaşıp genişler
-    const turns = 7;
-    const ang = p * Math.PI * turns;
+    const ang = p * Math.PI * 7;
     scaleX = Math.abs(Math.cos(ang));
-    // hangi yüz görünüyor? çift yarım tur => başlangıç yüzü, tek => diğer
-    const half = Math.floor(ang / Math.PI) % 2;
-    faceLabel = half === 0 ? 'YAZI' : 'TURA';
-    // son karede sonuç yüzünü sabitle
+    faceLabel = (Math.floor(ang / Math.PI) % 2 === 0) ? 'YAZI' : 'TURA';
     if (p >= 1) faceLabel = flip.result === 'tura' ? 'TURA' : 'YAZI';
-    // zıplama yüksekliği (parabol)
-    bob = -Math.sin(p * Math.PI) * (H * 0.12);
+    bob = -Math.sin(p * Math.PI) * (H * 0.10);
   }
   drawCoin(L.cx, L.coinY + bob, L.coinR, scaleX, faceLabel);
 
-  // butonlar
+  // yönerge / durum
   const busy = flip && flip.active;
-  drawButton(L.yaziX, L.btnY, L.btnW, L.btnH, 'YAZI', THEME.yazi, busy);
-  drawButton(L.turaX, L.btnY, L.btnW, L.btnH, 'TURA', THEME.tura, busy);
-
-  // yönerge / durum metni
-  ctx.font = `600 ${Math.floor(Math.min(W * 0.04, 17))}px 'Segoe UI', sans-serif`;
-  ctx.fillStyle = THEME.dim;
-  const hintY = L.btnY - 26;
-  if (!flip) {
-    ctx.fillText('Bir taraf seç ve parayı at', L.cx, hintY);
-  } else if (busy) {
+  ctx.font = `600 ${Math.floor(Math.min(W * 0.038, 15))}px 'Segoe UI', sans-serif`;
+  const hintY = L.row1Y - 20;
+  if (busy) {
+    ctx.fillStyle = THEME.dim;
     ctx.fillText('Para havada...', L.cx, hintY);
-  } else {
+  } else if (flip) {
     ctx.fillStyle = flip.won ? THEME.win : THEME.lose;
     const rName = flip.result === 'tura' ? 'TURA' : 'YAZI';
-    ctx.fillText(`${rName} geldi — ${flip.won ? 'kazandın!' : 'kaybettin'}`, L.cx, hintY);
+    ctx.fillText(`${rName} geldi — ${flip.won ? 'doğru!' : 'yandın'}`, L.cx, hintY);
+  } else {
+    ctx.fillStyle = THEME.dim;
+    ctx.fillText('Bir taraf seç • pot büyüdükçe çekilmeyi düşün', L.cx, hintY);
   }
 
-  // yazı/tura dağılımı (alt bilgi)
-  ctx.font = `500 ${Math.floor(Math.min(W * 0.033, 13))}px 'Segoe UI', sans-serif`;
-  ctx.fillStyle = THEME.dim;
-  ctx.fillText(`Yazı: ${S.yaziCount}   Tura: ${S.turaCount}   Kazanma: ${S.wins}`, L.cx, H - 18);
+  // butonlar — satır 1: Yazı / Tura
+  drawButton(L.leftX, L.row1Y, L.btnW, L.btnH, 'YAZI', null, THEME.yazi, busy);
+  drawButton(L.rightX, L.row1Y, L.btnW, L.btnH, 'TURA', null, THEME.tura, busy);
+
+  // butonlar — satır 2: Çekil / Reklam
+  const canCash = !busy && S.pot > 0;
+  drawButton(L.leftX, L.row2Y, L.btnW, L.btnH, 'ÇEKİL', money(S.pot), THEME.cash, !canCash);
+  drawButton(L.rightX, L.row2Y, L.btnW, L.btnH, 'REKLAM İZLE', '+' + money(AD_REWARD), THEME.ad, busy);
 
   // toast
   if (toast.until > now) {
     const a = Math.min(1, (toast.until - now) / 400);
     ctx.globalAlpha = a;
     ctx.fillStyle = toast.color || THEME.text;
-    ctx.font = `800 ${Math.floor(Math.min(W * 0.07, 30))}px 'Segoe UI', sans-serif`;
-    ctx.fillText(toast.msg, L.cx, L.coinY - L.coinR - 40);
+    ctx.font = `800 ${Math.floor(Math.min(W * 0.06, 26))}px 'Segoe UI', sans-serif`;
+    ctx.fillText(toast.msg, L.cx, L.coinY - L.coinR - 34);
     ctx.globalAlpha = 1;
   }
 }
@@ -276,33 +311,24 @@ let last = performance.now();
 function loop(now) {
   const dt = now - last;
   last = now;
-
   if (flip && flip.active) {
     flip.t += dt;
-    if (flip.t >= flip.dur) {
-      flip.t = flip.dur;
-      finishFlip();
-    }
+    if (flip.t >= flip.dur) { flip.t = flip.dur; finishFlip(); }
   }
-
   draw(now);
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 
 // ─── GİRİŞ ───────────────────────────────────────────────────────────────────
-function hit(px, py) {
-  const L = layout();
-  if (px >= L.yaziX && px <= L.yaziX + L.btnW && py >= L.btnY && py <= L.btnY + L.btnH)
-    return 'yazi';
-  if (px >= L.turaX && px <= L.turaX + L.btnW && py >= L.btnY && py <= L.btnY + L.btnH)
-    return 'tura';
-  return null;
-}
+function inRect(px, py, x, y, w, h) { return px >= x && px <= x + w && py >= y && py <= y + h; }
 
 function onTap(px, py) {
-  const choice = hit(px, py);
-  if (choice) startFlip(choice);
+  const L = layout();
+  if (inRect(px, py, L.leftX,  L.row1Y, L.btnW, L.btnH)) return startFlip('yazi');
+  if (inRect(px, py, L.rightX, L.row1Y, L.btnW, L.btnH)) return startFlip('tura');
+  if (inRect(px, py, L.leftX,  L.row2Y, L.btnW, L.btnH)) return cashOut();
+  if (inRect(px, py, L.rightX, L.row2Y, L.btnW, L.btnH)) return watchAd();
 }
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -311,8 +337,11 @@ canvas.addEventListener('pointerdown', (e) => {
   onTap(e.clientX - rect.left, e.clientY - rect.top);
 }, { passive: false });
 
-// klavye kısayolu (masaüstü): Y = yazı, T = tura
+// klavye kısayolları (masaüstü): Y=yazı, T=tura, C=çekil, R=reklam
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'y' || e.key === 'Y') startFlip('yazi');
-  if (e.key === 't' || e.key === 'T') startFlip('tura');
+  const k = e.key.toLowerCase();
+  if (k === 'y') startFlip('yazi');
+  else if (k === 't') startFlip('tura');
+  else if (k === 'c') cashOut();
+  else if (k === 'r') watchAd();
 });
