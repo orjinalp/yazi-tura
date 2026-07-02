@@ -424,8 +424,7 @@ function draw(now) {
   ctx.fillText(canCash ? 'ÇEKİL ' + money(S.pot) : 'ÇEKİL', L.cashX, L.cashY + L.cashR + 15);
   ctx.restore();
 
-  // toast / duyuru — coin'in altındaki boş alanda (para yukarı fırladığı ve
-  // üstte pot yazısı olduğu için burada hiçbir şeyle üst üste binmez)
+  // toast / duyuru — pot yazısının hemen altında
   if (toast.until > now) {
     const p = Math.min(1, (now - toast.start) / (toast.until - toast.start));
     let a = 1, scale = 1;
@@ -435,7 +434,7 @@ function draw(now) {
     else                            a = Math.min(1, (toast.until - now) / 400);
     ctx.save();
     ctx.globalAlpha = a;
-    ctx.translate(L.cx, L.coinY + L.coinR + 46);
+    ctx.translate(L.cx, H * 0.215 + 34);
     ctx.scale(scale, scale);
     ctx.fillStyle = toast.color || THEME.text;
     ctx.font = `800 ${Math.floor(Math.min(W * 0.06, 26))}px 'Segoe UI', sans-serif`;
