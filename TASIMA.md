@@ -67,20 +67,23 @@ open YaziTura.xcodeproj
   **"Yazi Tura App Store"** provisioning profilini oluşturman gerekir.
 - App Store yayını: `./archive.sh <TEAM_ID>`
 
-## 5. Taşımadan sonra elden geçirilecekler
+## 5. Temizlik durumu
 
-Bunlar hâlâ eski projeden kalma; yeni repoda güncellemen önerilir:
+Eski Pizza Empire kalıntıları temizlendi:
 
-- **`app-store/screenshots/`** — ekran görüntüleri hâlâ Pizza Empire'a ait.
-  Yazı Tura ekranlarıyla yenile (iPhone 6.5"/6.9" ve iPad boyutları).
-- **`docs/privacy.html`** — eski Pizza Empire gizlilik sayfası; artık oyun içi
-  menüde Gizlilik Politikası var. Bu dosyayı ya sil ya da Yazı Tura'ya göre
-  güncelle.
-- **`icons/` içindeki `apple-touch-*` ve `splash/`** — eski pizza görselleri,
-  şu an hiçbir yerden referanslanmıyor. İstersen jeton temalı yenileriyle
-  değiştir veya sil (`index.html` yalnızca `favicon.ico` + `site.webmanifest`
-  kullanıyor).
-- **`ios/AppIcon.appiconset`** — `ios-app/Resources/.../AppIcon.appiconset` ile
-  aynı ikon setinin bir kopyası. Hangisini kullandığını netleştirip tekilleştir.
-- **Yaş sınırı** — oyun sanal parayla yazı-tura mekaniği içeriyor; App Store
-  yaş formunda "Simulated Gambling" sorusuna dürüst yanıt ver (genelde 17+).
+- ✅ **`app-store/screenshots/`** — Yazı Tura ekranlarıyla yenilendi (iPhone
+  6.5" 1242×2688, 6.9" 1290×2796, iPad 2048×2732).
+- ✅ **`docs/privacy.html`** — Yazı Tura gizlilik politikasına güncellendi
+  (oyun içi menüdeki metinle tutarlı).
+- ✅ **Web ikonları** — referanssız pizza görselleri (`apple-touch-*`, `splash/`,
+  `favicon-16/32`) kaldırıldı; jeton temalı `apple-touch-icon.png` eklendi.
+  Kalan ikonlar: `favicon.ico`, `icons/icon-192`, `icons/icon-512`,
+  `icons/apple-touch-icon`.
+- ✅ **Yinelenen `ios/` klasörü** — kaldırıldı; tek ikon seti
+  `ios-app/Resources/Assets.xcassets/AppIcon.appiconset` altında.
+
+## 6. Yayın öncesi tek not (App Store)
+
+- **Yaş sınırı** — oyun sanal parayla yazı-tura mekaniği içeriyor; Apple yaş
+  formunda "Simulated Gambling" sorusuna dürüst yanıt ver (genelde 17+).
+  Gerçek para söz konusu değil; bu, Kullanım Koşulları'nda belirtilmiştir.
