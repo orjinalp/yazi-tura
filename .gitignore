@@ -5,3 +5,4 @@ ios-app/build/
 ios-app/DerivedData/
 **/xcuserdata/
 .DS_Store
+.claude/

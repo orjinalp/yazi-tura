@@ -9,10 +9,12 @@
 const THEME = {
   bg1:    '#0b1020',
   bg2:    '#131a33',
-  gold:   '#f4c430',
-  goldHi: '#ffe98a',
-  goldLo: '#b8860b',
-  edge:   '#8a6508',
+  coinFace:   '#ffd15c',   // üst yüz — sarı altın
+  coinFaceHi: '#ffe08a',   // üst yüz parlak kısım
+  coinInner:  '#f2bd45',   // içteki çukur daire
+  coinSide:   '#e08a2e',   // yan yüzey (silindir gövde) — turuncu
+  coinNotch:  '#c06a1a',   // kenar çentikleri
+  coinRim:    '#d99a26',   // dış çizgi / kabartma çerçeve
   text:   '#f5f7ff',
   dim:    '#8b93b5',
   yazi:   '#4dabf7',
@@ -176,45 +178,64 @@ function roundRect(x, y, w, h, r) {
   ctx.closePath();
 }
 
-// sy: dikey basıklık (perspektif) — 1 = tam yüz, küçüldükçe yatık/yan görünüm
+// sy: dikey basıklık (perspektif) — 1 = tam yüz, küçüldükçe yatık/yan görünüm.
+// Para kalın bir silindir: sarı üst yüz + turuncu gövde + kenar çentikleri.
 function drawCoin(cx, cy, r, sy, faceLabel, rot) {
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rot || 0);
-  const h = Math.max(2, r * sy);
+  const h = Math.max(2, r * sy);   // üst yüz elipsinin dikey yarıçapı
+  const T = r * 0.30;              // paranın kalınlığı (gövde yüksekliği)
 
-  // kenar kalınlığı — yatık duran/dönen parada alttan görünür (3B hissi)
-  const th = (1 - sy) * r * 0.22;
-  if (th > 0.5) {
-    ctx.fillStyle = THEME.goldLo;
+  // ── yan yüzey: alt kapak + gövde ──
+  ctx.fillStyle = THEME.coinSide;
+  ctx.beginPath();
+  ctx.ellipse(0, T, r, h, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.rect(-r, 0, r * 2, T);
+  ctx.fill();
+
+  // çentikler — gövde üzerinde dikey çizgiler
+  ctx.strokeStyle = THEME.coinNotch;
+  ctx.lineWidth = Math.max(2, r * 0.055);
+  const N = 9;
+  for (let i = 1; i < N; i++) {
+    const t = (i / N) * Math.PI;         // ön (alt) yarım elips boyunca
+    const x = r * Math.cos(t);
+    const y = h * Math.sin(t);
     ctx.beginPath();
-    ctx.ellipse(0, th, r, h, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + T);
+    ctx.stroke();
   }
 
-  const grad = ctx.createLinearGradient(-r, -h, r, h);
-  grad.addColorStop(0, THEME.goldLo);
-  grad.addColorStop(0.5, THEME.gold);
-  grad.addColorStop(1, THEME.goldHi);
+  // ── üst yüz ──
+  const grad = ctx.createLinearGradient(0, -h, 0, h);
+  grad.addColorStop(0, THEME.coinFaceHi);
+  grad.addColorStop(1, THEME.coinFace);
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.ellipse(0, 0, r, h, 0, 0, Math.PI * 2);
   ctx.fill();
-
-  ctx.lineWidth = Math.max(2, r * 0.06);
-  ctx.strokeStyle = THEME.edge;
+  ctx.lineWidth = Math.max(2, r * 0.04);
+  ctx.strokeStyle = THEME.coinRim;
   ctx.stroke();
 
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  // içteki çukur daire (kabartma çerçeve)
+  ctx.fillStyle = THEME.coinInner;
   ctx.beginPath();
-  ctx.ellipse(0, 0, r * 0.82, h * 0.82, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, r * 0.78, h * 0.78, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = THEME.coinRim;
   ctx.stroke();
 
+  // yüz yazısı
   if (sy > 0.30) {
     ctx.globalAlpha = Math.min(1, (sy - 0.30) / 0.3);
-    ctx.fillStyle = '#5a4200';
-    ctx.font = `700 ${Math.floor(r * 0.42)}px 'Segoe UI', sans-serif`;
+    ctx.fillStyle = '#a5690a';
+    ctx.font = `700 ${Math.floor(r * 0.40)}px 'Segoe UI', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.save();
@@ -305,7 +326,7 @@ function draw(now) {
   ctx.globalAlpha = 0.25 * (1 - air * 0.6);
   ctx.fillStyle = '#000';
   ctx.beginPath();
-  ctx.ellipse(L.cx + dx, L.coinY + L.coinR * TILT + 18,
+  ctx.ellipse(L.cx + dx, L.coinY + L.coinR * (TILT + 0.30) + 12,
               L.coinR * (0.9 - air * 0.35), L.coinR * 0.15 * (1 - air * 0.4),
               0, 0, Math.PI * 2);
   ctx.fill();
