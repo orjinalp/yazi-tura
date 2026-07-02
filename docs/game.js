@@ -371,14 +371,10 @@ function draw(now) {
   adBtn = { x: L.cx + kasaW / 2 + 12, y: H * 0.165 - chipH / 2, w: chipW, h: chipH };
   drawButton(adBtn.x, adBtn.y, adBtn.w, adBtn.h, '📺 +1$', null, THEME.ad, busy);
 
-  // seri / pot / kazanırsan pot
-  const nextPot = potAt(S.streak + 1);
+  // pot
   ctx.font = `700 ${Math.floor(Math.min(W * 0.042, 17))}px 'Segoe UI', sans-serif`;
   ctx.fillStyle = THEME.potc;
-  ctx.fillText(`Seri ${S.streak}   •   Pot ${money(S.pot)}`, L.cx, H * 0.215);
-  ctx.font = `600 ${Math.floor(Math.min(W * 0.036, 14))}px 'Segoe UI', sans-serif`;
-  ctx.fillStyle = THEME.dim;
-  ctx.fillText(`Kazanırsan pot: ${money(nextPot)}   (Rekor seri: ${S.best})`, L.cx, H * 0.215 + 26);
+  ctx.fillText(`Pot ${money(S.pot)}`, L.cx, H * 0.215);
 
   // para animasyonu — yukarı fırlar, yatay eksende takla atar; sağa-sola en
   // fazla azıcık kayar. Yerdeyken perspektifli (yatık) durur.
