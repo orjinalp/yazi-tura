@@ -94,7 +94,14 @@ function startFlip(chosen) {
     showToast('Giriş: -' + money(FLIP_COST) + ' kasadan', THEME.ad);
   }
   const result = Math.random() < 0.5 ? 'yazi' : 'tura';
-  flip = { active: true, t: 0, dur: 500, chosen, result, won: chosen === result };
+  flip = {
+    active: true, t: 0, dur: 500, chosen, result, won: chosen === result,
+    // 3B savrulma parametreleri — her atışta rastgele
+    driftX: (Math.random() * 2 - 1),              // yatay savrulma oranı (-1..1)
+    spins:  1 + Math.floor(Math.random() * 2),    // havada takla sayısı (1-2)
+    dir:    Math.random() < 0.5 ? -1 : 1,         // takla yönü
+    wobble: (Math.random() * 2 - 1) * 0.6,        // eksen yalpası (radyan)
+  };
 }
 
 function finishFlip() {
@@ -169,18 +176,20 @@ function roundRect(x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawCoin(cx, cy, r, scaleX, faceLabel) {
+function drawCoin(cx, cy, r, scaleX, faceLabel, rot) {
   ctx.save();
   ctx.translate(cx, cy);
+  ctx.rotate(rot || 0);
   const w = Math.max(2, r * scaleX);
 
-  ctx.save();
-  ctx.globalAlpha = 0.25;
-  ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.ellipse(0, r + 24, w * 0.9, r * 0.15, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  // kenar kalınlığı — para yan döndükçe belirginleşir (3B hissi)
+  const th = (1 - scaleX) * r * 0.18;
+  if (th > 0.5) {
+    ctx.fillStyle = THEME.goldLo;
+    ctx.beginPath();
+    ctx.ellipse(th, 0, w, r, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   const grad = ctx.createLinearGradient(-w, -r, w, r);
   grad.addColorStop(0, THEME.goldLo);
@@ -269,17 +278,34 @@ function draw(now) {
   ctx.fillStyle = THEME.dim;
   ctx.fillText(`Kazanırsan pot: ${money(nextPot)}   (Rekor seri: ${S.best})`, L.cx, H * 0.215 + 26);
 
-  // para animasyonu
-  let scaleX = 1, faceLabel = 'YAZI', bob = 0;
+  // para animasyonu — 3B savrulma: yükselir, takla atar, yalpalar, ortaya döner
+  let scaleX = 1, faceLabel = 'YAZI', bob = 0, dx = 0, rot = 0, air = 0;
   if (flip) {
     const p = Math.min(flip.t / flip.dur, 1);
     const ang = p * Math.PI * 4;
     scaleX = Math.abs(Math.cos(ang));
     faceLabel = (Math.floor(ang / Math.PI) % 2 === 0) ? 'YAZI' : 'TURA';
     if (p >= 1) faceLabel = flip.result === 'tura' ? 'TURA' : 'YAZI';
-    bob = -Math.sin(p * Math.PI) * (H * 0.10);
+    air = Math.sin(p * Math.PI);                    // 0 → 1 → 0 (havadalık)
+    bob = -air * (H * 0.10);
+    const maxDrift = Math.max(0, W / 2 - L.coinR - 30);
+    dx = air * flip.driftX * maxDrift;              // savrulur, sonda ortaya döner
+    rot = flip.dir * p * Math.PI * 2 * flip.spins   // takla: sonda tam tur = düz durur
+        + air * flip.wobble;                        // havadayken eksen yalpası
   }
-  drawCoin(L.cx, L.coinY + bob, L.coinR, scaleX, faceLabel);
+
+  // gölge — yerde sabit; para yükseldikçe küçülür ve solar (derinlik hissi)
+  ctx.save();
+  ctx.globalAlpha = 0.25 * (1 - air * 0.6);
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(L.cx + dx, L.coinY + L.coinR + 24,
+              L.coinR * (0.9 - air * 0.35), L.coinR * 0.15 * (1 - air * 0.4),
+              0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  drawCoin(L.cx + dx, L.coinY + bob, L.coinR, scaleX, faceLabel, rot);
 
   // yönerge / durum
   const busy = flip && flip.active;
