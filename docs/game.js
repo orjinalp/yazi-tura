@@ -7,8 +7,8 @@
 
 // ─── TEMA ────────────────────────────────────────────────────────────────────
 const THEME = {
-  bg1:    '#0b1020',
-  bg2:    '#131a33',
+  bg1:    '#1a2444',
+  bg2:    '#2b3765',
   coinFace:   '#ffd15c',   // üst yüz — sarı altın
   coinFaceHi: '#ffe08a',   // üst yüz parlak kısım
   coinInner:  '#f2bd45',   // içteki çukur daire
@@ -396,7 +396,7 @@ function draw(now) {
 
   // gölge — yerde sabit; para yükseldikçe küçülür ve solar (derinlik hissi)
   ctx.save();
-  ctx.globalAlpha = 0.25 * (1 - air * 0.6);
+  ctx.globalAlpha = 0.38 * (1 - air * 0.6);
   ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.ellipse(L.cx + dx, L.coinY + L.coinR * (TILT + 0.30) + 12,
