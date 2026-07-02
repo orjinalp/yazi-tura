@@ -1,10 +1,10 @@
 {
-  "name": "Pizza Empire",
-  "short_name": "Pizza Empire",
+  "name": "Yazı Tura",
+  "short_name": "Yazı Tura",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#1a0d00",
-  "theme_color": "#1a0d00",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
   "icons": [
     {
       "src": "icons/icon-192.png",
