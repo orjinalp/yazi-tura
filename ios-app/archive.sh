@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pizza Empire — Archive & export for App Store Connect.
+# Yazı Tura — Archive & export for App Store Connect.
 #
 # Prereq: your Apple ID (alpcanut@icloud.com) is added in Xcode under
 #   Xcode ▸ Settings ▸ Accounts, and you know your 10-character Team ID
@@ -8,7 +8,7 @@
 # Usage:
 #   ./archive.sh <TEAM_ID>
 #
-# This produces build/PizzaEmpire.ipa, ready to upload with Transporter
+# This produces build/YaziTura.ipa, ready to upload with Transporter
 # or `xcrun altool` / Xcode Organizer.
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -23,12 +23,12 @@ fi
 ./sync-web.sh
 xcodegen generate
 
-ARCHIVE_PATH="build/PizzaEmpire.xcarchive"
+ARCHIVE_PATH="build/YaziTura.xcarchive"
 EXPORT_DIR="build/export"
 
 echo "▸ Archiving…"
-xcodebuild -project PizzaEmpire.xcodeproj \
-  -scheme PizzaEmpire \
+xcodebuild -project YaziTura.xcodeproj \
+  -scheme YaziTura \
   -configuration Release \
   -destination 'generic/platform=iOS' \
   -archivePath "$ARCHIVE_PATH" \

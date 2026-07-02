@@ -1,25 +1,25 @@
 import UIKit
 import WebKit
 
-/// Hosts the Pizza Empire web game inside a full-screen WKWebView.
+/// Hosts the Yazı Tura web game inside a full-screen WKWebView.
 /// All game assets are bundled locally (see the "Web" folder reference),
 /// so the app runs fully offline.
 final class GameViewController: UIViewController, WKNavigationDelegate {
 
     private var webView: WKWebView!
 
-    /// Brand background (#1a0d00) — matches the web app's theme-color so there
+    /// Brand background (#0b1020) — matches the web app's theme-color so there
     /// is no white flash before the canvas paints.
-    private let brandColor = UIColor(red: 0x1a / 255.0,
-                                     green: 0x0d / 255.0,
-                                     blue: 0x00 / 255.0,
+    private let brandColor = UIColor(red: 0x0b / 255.0,
+                                     green: 0x10 / 255.0,
+                                     blue: 0x20 / 255.0,
                                      alpha: 1.0)
 
-    /// The game's header-bar colour (THEME.panel = #241400). Used behind the
-    /// status bar so it blends seamlessly with the header that sits just below.
-    private let headerColor = UIColor(red: 0x24 / 255.0,
-                                      green: 0x14 / 255.0,
-                                      blue: 0x00 / 255.0,
+    /// Backdrop behind the status bar (top of the game's background gradient,
+    /// #0b1020) so it blends seamlessly with the canvas just below.
+    private let headerColor = UIColor(red: 0x0b / 255.0,
+                                      green: 0x10 / 255.0,
+                                      blue: 0x20 / 255.0,
                                       alpha: 1.0)
 
     override func loadView() {

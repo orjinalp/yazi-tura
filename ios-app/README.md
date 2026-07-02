@@ -1,11 +1,11 @@
-# Pizza Empire — iOS App
+# Yazı Tura — iOS App
 
-Native iOS wrapper for the Pizza Empire web game. The game (HTML/Canvas/JS)
+Native iOS wrapper for the Yazı Tura web game. The game (HTML/Canvas/JS)
 is bundled locally inside the app and runs **fully offline** in a full-screen
 `WKWebView`.
 
-- **Bundle ID:** `com.orjinalp.pizzaempire`
-- **Display name:** Pizza Empire: Clicker
+- **Bundle ID:** `com.orjinalp.yazitura`
+- **Display name:** Yazı Tura
 - **Minimum iOS:** 15.0
 - **Devices:** iPhone + iPad (portrait)
 
@@ -30,9 +30,9 @@ After editing `project.yml`, run `xcodegen generate`.
 ```bash
 cd ios-app
 xcodegen generate          # only needed after changing project.yml
-open PizzaEmpire.xcodeproj  # then press ⌘R, or:
+open YaziTura.xcodeproj  # then press ⌘R, or:
 
-xcodebuild -project PizzaEmpire.xcodeproj -scheme PizzaEmpire \
+xcodebuild -project YaziTura.xcodeproj -scheme YaziTura \
   -destination 'platform=iOS Simulator,name=iPhone 16' build
 ```
 
@@ -48,7 +48,7 @@ re-sync it into the app:
 1. **Sign in:** Xcode ▸ Settings ▸ Accounts → add your Apple ID
    (`alpcanut@icloud.com`). Note your 10-character **Team ID**.
 2. **Create the app record** at https://appstoreconnect.apple.com → Apps ▸ +
-   → New App. Use bundle ID `com.orjinalp.pizzaempire` (register it first
+   → New App. Use bundle ID `com.orjinalp.yazitura` (register it first
    under Certificates, IDs & Profiles ▸ Identifiers if prompted).
 3. **Archive & export:**
    ```bash

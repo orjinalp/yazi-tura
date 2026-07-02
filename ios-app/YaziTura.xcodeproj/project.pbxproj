@@ -17,7 +17,7 @@
 		114733594D710E468E80A134 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		33A212F30378D0E64B263ECC /* Web */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Web; sourceTree = SOURCE_ROOT; };
 		675A5F5CD63A2C03611D67C9 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
-		9537A1C108E35699060CFA62 /* PizzaEmpire.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PizzaEmpire.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9537A1C108E35699060CFA62 /* YaziTura.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = YaziTura.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E865235AB1CBF86C33EDE79A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -52,7 +52,7 @@
 		F9C0850BA4223DC05A5518F4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9537A1C108E35699060CFA62 /* PizzaEmpire.app */,
+				9537A1C108E35699060CFA62 /* YaziTura.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -60,9 +60,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B7113AA78181F7AF7E0FB469 /* PizzaEmpire */ = {
+		B7113AA78181F7AF7E0FB469 /* YaziTura */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C3BAEFC503737F36D50BFABB /* Build configuration list for PBXNativeTarget "PizzaEmpire" */;
+			buildConfigurationList = C3BAEFC503737F36D50BFABB /* Build configuration list for PBXNativeTarget "YaziTura" */;
 			buildPhases = (
 				9254F83277E952E1A534D364 /* Sources */,
 				2F60949F2C81A63795D72B7C /* Resources */,
@@ -71,11 +71,11 @@
 			);
 			dependencies = (
 			);
-			name = PizzaEmpire;
+			name = YaziTura;
 			packageProductDependencies = (
 			);
-			productName = PizzaEmpire;
-			productReference = 9537A1C108E35699060CFA62 /* PizzaEmpire.app */;
+			productName = YaziTura;
+			productReference = 9537A1C108E35699060CFA62 /* YaziTura.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -93,7 +93,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 32EF526D731F30FF84247542 /* Build configuration list for PBXProject "PizzaEmpire" */;
+			buildConfigurationList = 32EF526D731F30FF84247542 /* Build configuration list for PBXProject "YaziTura" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -107,7 +107,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B7113AA78181F7AF7E0FB469 /* PizzaEmpire */,
+				B7113AA78181F7AF7E0FB469 /* YaziTura */,
 			);
 		};
 /* End PBXProject section */
@@ -151,9 +151,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.orjinalp.pizzaempire;
-				PRODUCT_NAME = PizzaEmpire;
-				PROVISIONING_PROFILE_SPECIFIER = "Pizza Empire App Store";
+				PRODUCT_BUNDLE_IDENTIFIER = com.orjinalp.yazitura;
+				PRODUCT_NAME = YaziTura;
+				PROVISIONING_PROFILE_SPECIFIER = "Yazi Tura App Store";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -173,9 +173,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.orjinalp.pizzaempire;
-				PRODUCT_NAME = PizzaEmpire;
-				PROVISIONING_PROFILE_SPECIFIER = "Pizza Empire App Store";
+				PRODUCT_BUNDLE_IDENTIFIER = com.orjinalp.yazitura;
+				PRODUCT_NAME = YaziTura;
+				PROVISIONING_PROFILE_SPECIFIER = "Yazi Tura App Store";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -311,7 +311,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		32EF526D731F30FF84247542 /* Build configuration list for PBXProject "PizzaEmpire" */ = {
+		32EF526D731F30FF84247542 /* Build configuration list for PBXProject "YaziTura" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F1E3A8447AC9D0D161A3B92E /* Debug */,
@@ -320,7 +320,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		C3BAEFC503737F36D50BFABB /* Build configuration list for PBXNativeTarget "PizzaEmpire" */ = {
+		C3BAEFC503737F36D50BFABB /* Build configuration list for PBXNativeTarget "YaziTura" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				07D26F16AC1BC5E946C6205C /* Debug */,

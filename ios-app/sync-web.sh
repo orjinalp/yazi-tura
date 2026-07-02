@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 ROOT=".."
 rm -rf Web
 mkdir -p Web
-cp "$ROOT/index.html" "$ROOT/game.js" "$ROOT/style.css" "$ROOT/site.webmanifest" "$ROOT/favicon.ico" Web/
+cp "$ROOT/index.html" "$ROOT/game.js" "$ROOT/menu.js" "$ROOT/leaderboard.js" \
+   "$ROOT/style.css" "$ROOT/site.webmanifest" "$ROOT/favicon.ico" Web/
 cp -R "$ROOT/icons" Web/icons
 echo "✅ Web/ synced from repo root."

@@ -1,46 +1,52 @@
-# Pizza Empire: Clicker — App Store Listeleme Metni (TR)
+# Yazı Tura — App Store Listeleme Metni (TR)
 
 ## Uygulama Adı (App Name) — max 30 karakter
-Pizza Empire: Clicker
+Yazı Tura
 
 ## Alt Başlık (Subtitle) — max 30 karakter
-Tıkla, pişir, imparatorluk kur
+Seriyi yap, potu katla, çekil
 
 ## Anahtar Kelimeler (Keywords) — max 100 karakter, virgülle
-pizza,clicker,idle,tıklama,boşta,oyun,fırın,şef,para,yükseltme,kazan,tycoon,işletme,offline
+yazı tura,para at,jeton,şans,seri,coin flip,refleks,eğlence,casual,kasa,offline,oyun
 
 ## Tanıtım Metni (Promotional Text) — max 170 karakter
-Bir dilim pizzayla başla, koca bir imparatorluğa ulaş! Tıkla, üreticileri yükselt, çevrimdışıyken bile kazanmaya devam et.
+Yazı mı, tura mı? Doğru bildikçe potun ikiye katlanır. İstediğin an çekil, kasanı büyüt — nereye kadar cesaret edebilirsin?
 
 ## Açıklama (Description)
-Pizza Empire'a hoş geldin — sıfırdan bir pizza imparatorluğu kurduğun, bağımlılık yapan tıklama (clicker / idle) oyunu!
+Yazı Tura — basit ama tutku yaratan bir şans ve seri oyunu!
 
-Ekrana dokunarak pizza pişir, kazandığın dilimlerle yeni üreticiler aç ve gelirini katla. Çırak aşçından dev dağıtım ağlarına kadar her yükseltme seni daha büyük bir imparatorluğa taşır.
+Bir taraf seç: Yazı ya da Tura. Doğru bilirsen serin büyür ve potun İKİYE KATLANIR. Seri 8'de 256$, seri 9'da 512$… Kaybetmeden önce çekil ve biriken potu kasana aktar. Ne kadar açgözlü olacağın sana kalmış: bir el daha mı, yoksa güvenli kâr mı?
 
 ÖZELLİKLER
-• Tek dokunuşla kolay oynanış — herkes için
-• Otomatik üreticiler: Çırak Aşçı, Domates Tarlası, Taş Fırın, Dağıtım Ağı, Şube ve daha fazlası
-• Boşta (idle) kazanç — oyunu kapatsan bile dilimler birikmeye devam eder
-• Akıcı, şık tasarım ve tatmin edici ilerleme hissi
+• Tek dokunuşla oynanış — Yazı ya da Tura
+• Her doğru tahminde pot ikiye katlanır (2, 4, 8, 16, … katlanarak büyür)
+• İstediğin an ÇEKİL ile potu güvene al
+• Kasa, güncel seri ve rekor takibi
+• Liderlik tablosu
+• Akıcı, şık tasarım ve tatmin edici para animasyonu
 • Tamamen çevrimdışı — internet gerekmez
-• Reklam yok, takip yok, gizli ücret yok
 
-Küçük bir fırından dünya çapında bir markaya: pizza imparatorluğun seni bekliyor!
+Not: Oyun içindeki tüm para birimleri (kasa, pot) sanaldır; gerçek para değeri taşımaz ve gerçek parayla oynanmaz.
 
 ## Destek URL'si (Support URL) — ZORUNLU
-(GitHub Pages sayfan veya bir iletişim sayfası — örn. https://<kullanıcıadın>.github.io/pizza-empire/)
+(GitHub Pages sayfan veya bir iletişim sayfası — örn. https://<kullanıcıadın>.github.io/yazi-tura/)
 
 ## Pazarlama URL'si (Marketing URL) — opsiyonel
 (boş bırakılabilir)
 
 ## Kategori
-Birincil: Games  → Alt tür önerisi: Casual / Simulation
+Birincil: Games  → Alt tür önerisi: Casual
 
 ## Yaş Sınırı (Age Rating)
-Tüm sorulara "Yok/Hayır" → büyük ihtimalle 4+
+Oyun, sanal parayla bir "yazı tura" (şans/simüle kumar) mekaniği içerir. Apple'ın
+yaş derecelendirme formunda "Simulated Gambling" (Simüle Kumar) sorusuna dürüst
+yanıt ver — bu genellikle **17+** dereceye yol açar. Gerçek para söz konusu
+olmadığından Kullanım Koşulları'nda bu açıkça belirtilmiştir.
 
 ## App Privacy
-"Data Not Collected" — oyun veriyi yalnızca cihazda (localStorage) saklar, hiçbir veri toplanmaz/gönderilmez.
+"Data Not Collected" — oyun veriyi yalnızca cihazda (localStorage) saklar; hiçbir
+veri toplanmaz/gönderilmez. (Liderlik tablosu şu an demo/yerel verilerle çalışır.
+İleride gerçek bir sunucuya veya reklam ağına bağlanırsa bu bölüm güncellenmelidir.)
 
 ## Fiyat
 Free (Ücretsiz)

@@ -14,8 +14,8 @@
 	<string>Apple Distribution</string>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>com.orjinalp.pizzaempire</key>
-		<string>Pizza Empire App Store</string>
+		<key>com.orjinalp.yazitura</key>
+		<string>Yazi Tura App Store</string>
 	</dict>
 	<key>uploadSymbols</key>
 	<true/>
