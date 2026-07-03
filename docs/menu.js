@@ -77,6 +77,7 @@
   // ─── Ben (istatistikler) ────────────────────────────────────────────────────
   function renderProfile() {
     const s = state() || {};
+    const online = !!(window.YTApi && YTApi.online);
     const total = s.total || 0;
     const wins = s.wins || 0;
     const hitRate = total > 0 ? Math.round((wins / total) * 100) : 0;
@@ -106,30 +107,44 @@
         <div class="profile-sub">${total} atış • rekor seri ${s.best || 0}</div>
       </div>
       <div class="stat-grid">${cards}</div>
-      <div class="page"><p class="muted">İstatistikler bu cihazda yerel olarak tutulur.</p></div>`;
+      <div class="page"><p class="muted">${online
+        ? 'İstatistikler sunucuda tutulur ve sıralamayı besler.'
+        : 'Çevrimdışı: istatistikler bu cihazda yerel tutulur, sıralamaya girmez.'}</p></div>`;
   }
 
-  // ─── Liderlik Tablosu (dummy servis) ────────────────────────────────────────
+  // ─── Liderlik Tablosu (sunucudan; toplam kazanca göre) ──────────────────────
   async function renderLeaderboard() {
     body.innerHTML = '<div class="lb-loading"><div class="spinner"></div>Liderlik tablosu yükleniyor…</div>';
     try {
-      const top = await window.Leaderboard.getTop(10);
-      const s = state();
-      const rows = top.map((e) => {
+      const res = await window.Leaderboard.getTop(20);
+      if (res.offline) {
+        body.innerHTML = `<div class="page">
+          <p class="muted">Sıralama çevrimiçi oynayınca (dereceli mod) etkinleşir.
+          İnternet bağlantısı ve sunucu gerektirir.</p>
+          <p class="muted">Sıralama <b>toplam kazanca</b> göredir ve sunucuda
+          hesaplandığı için hile korumalıdır.</p></div>`;
+        return;
+      }
+      const rows = res.top.map((e) => {
         const cls = e.rank <= 3 ? ` top${e.rank}` : '';
         return `<li class="lb-row">
           <span class="lb-rank${cls}">${e.rank}</span>
-          <span class="lb-name">${escapeHtml(e.name)}<div class="lb-meta">Rekor seri ${e.best}</div></span>
-          <span class="lb-score">${fmtMoney(e.kasa)}</span>
+          <span class="lb-name">${escapeHtml(e.name)}</span>
+          <span class="lb-score">${fmtMoney(e.total)}</span>
         </li>`;
       }).join('');
-      const youRow = s ? `<li class="lb-row lb-you">
-          <span class="lb-rank">•</span>
-          <span class="lb-name">Sen<div class="lb-meta">Rekor seri ${s.best || 0}</div></span>
-          <span class="lb-score">${fmtMoney(s.kasa || 0)}</span>
+      const you = res.you;
+      // Kendi sıran ilk 20'de değilse ayrıca alta ekle
+      const inTop = you && res.top.some((e) => e.rank === you.rank);
+      const youRow = (you && !inTop) ? `<li class="lb-row lb-you">
+          <span class="lb-rank">${you.rank}</span>
+          <span class="lb-name">${escapeHtml(you.name)} (Sen)</span>
+          <span class="lb-score">${fmtMoney(you.total)}</span>
         </li>` : '';
-      body.innerHTML = `<ul class="lb-list">${rows}${youRow}</ul>
-        <div class="page"><p class="muted">Sıralama kasaya göredir. (Şu an demo verisi gösteriliyor.)</p></div>`;
+      const empty = res.top.length === 0
+        ? '<div class="page"><p class="muted">Henüz kimse çekilmemiş. İlk sen ol!</p></div>' : '';
+      body.innerHTML = `<ul class="lb-list">${rows}${youRow}</ul>${empty}
+        <div class="page"><p class="muted">Sıralama toplam kazanca göredir; sunucuda hesaplanır.</p></div>`;
     } catch (err) {
       body.innerHTML = `<div class="lb-error">Liderlik tablosu yüklenemedi.<br>
         <button class="btn ghost" id="lbRetry" style="margin-top:12px">Tekrar dene</button></div>`;

@@ -75,9 +75,14 @@ window.addEventListener('resize', resize);
 resize();
 
 // ─── OYUN AKIŞI ──────────────────────────────────────────────────────────────
-let flip = null;   // { active, t, dur, chosen, result, won }
+let flip = null;   // { active, t, dur, chosen, result, won, serverState }
 let toast = { msg: '', color: '', mode: 'plain', start: 0, until: 0 };
 let adBtn = null;  // kasanın yanındaki reklam çipi (draw içinde hesaplanır)
+let ONLINE = false;      // sunucu-otoriter (dereceli) mod aktif mi
+let actionBusy = false;  // online istek uçarken tekrar-tıklamayı engeller
+
+// Sunucudan gelen otoriter durumu yerel S'e uygula (yalnızca cache olarak saklanır)
+function applyServerState(state) { if (state) { Object.assign(S, state); save(); } }
 
 function money(n) {
   n = Math.round(n);
@@ -96,7 +101,8 @@ function showToast(msg, color, mode, dur) {
 
 function startFlip(chosen) {
   if (flip && flip.active) return;
-  // yeni tura başlıyorsa (seri 0) kasadan giriş ücreti al
+  if (ONLINE) return startFlipOnline(chosen);
+  // ── OFFLINE (yerel): yeni tura başlıyorsa kasadan giriş ücreti al ──
   if (S.streak === 0) {
     if (S.kasa < FLIP_COST) {
       showToast('Kasa yetersiz! Reklam izle: +' + money(AD_REWARD), THEME.lose);
@@ -107,8 +113,34 @@ function startFlip(chosen) {
     showToast('-' + money(FLIP_COST), THEME.ad, 'in', 2000);
   }
   const result = Math.random() < 0.5 ? 'yazi' : 'tura';
+  beginFlipAnim(chosen, result, chosen === result, null);
+}
+
+// Online: atış sonucunu sunucu belirler; animasyon sunucunun sonucuyla oynar,
+// otoriter durum animasyon bitince uygulanır.
+async function startFlipOnline(chosen) {
+  if (actionBusy) return;
+  actionBusy = true;
+  if (S.streak === 0) showToast('-' + money(FLIP_COST), THEME.ad, 'in', 2000);
+  try {
+    const res = await YTApi.flip(chosen);   // { result, won, state }
+    beginFlipAnim(chosen, res.result, res.won, res.state);
+  } catch (e) {
+    if (e.status === 400 && e.data && e.data.error === 'insufficient_kasa') {
+      showToast('Kasa yetersiz! Reklam izle: +' + money(AD_REWARD), THEME.lose);
+    } else {
+      showToast('Bağlantı hatası', THEME.lose);
+    }
+  } finally {
+    actionBusy = false;
+  }
+}
+
+// Animasyonu başlat. serverState verilmişse (online) sonda uygulanır.
+function beginFlipAnim(chosen, result, won, serverState) {
   flip = {
-    active: true, t: 0, dur: 500, chosen, result, won: chosen === result,
+    active: true, t: 0, dur: 500, chosen, result, won,
+    serverState: serverState || null,
     // 3B savrulma parametreleri — her atışta rastgele
     driftX: (Math.random() * 2 - 1),              // yatay savrulma oranı (-1..1)
     spins:  1 + Math.floor(Math.random() * 2),    // havada takla sayısı (1-2)
@@ -119,25 +151,46 @@ function startFlip(chosen) {
 
 function finishFlip() {
   const f = flip;
-  S.total++;
-  if (f.won) {
-    S.wins++;
-    S.streak++;
-    S.pot = potAt(S.streak);            // pot ikiye katlanır
-    if (S.streak > S.best) S.best = S.streak;
-    showToast('KAZANDIN!', THEME.win, 'grow', 1000);
+  if (f.serverState) {
+    // online: sunucunun otoriter durumunu uygula
+    applyServerState(f.serverState);
+    showToast(f.won ? 'KAZANDIN!' : 'KAYBETTİN',
+              f.won ? THEME.win : THEME.lose, f.won ? 'grow' : 'fade', 1000);
   } else {
-    S.streak = 0;
-    S.pot = 0;
-    showToast('KAYBETTİN', THEME.lose, 'fade', 1000);
+    // offline: yerel hesap
+    S.total++;
+    if (f.won) {
+      S.wins++;
+      S.streak++;
+      S.pot = potAt(S.streak);            // pot ikiye katlanır
+      if (S.streak > S.best) S.best = S.streak;
+      showToast('KAZANDIN!', THEME.win, 'grow', 1000);
+    } else {
+      S.streak = 0;
+      S.pot = 0;
+      showToast('KAYBETTİN', THEME.lose, 'fade', 1000);
+    }
+    save();
   }
-  save();
   flip.active = false;
 }
 
-function cashOut() {
+async function cashOut() {
   if (flip && flip.active) return;
   if (S.pot <= 0) { showToast('Çekilecek pot yok', THEME.dim); return; }
+  if (ONLINE) {
+    if (actionBusy) return;
+    actionBusy = true;
+    try {
+      const res = await YTApi.cashout();    // { amount, state }
+      applyServerState(res.state);
+      showToast('+' + money(res.amount), THEME.cash, 'grow', 1000);
+    } catch (e) {
+      showToast('Bağlantı hatası', THEME.lose);
+    } finally { actionBusy = false; }
+    return;
+  }
+  // ── OFFLINE ──
   const amount = S.pot;
   S.kasa += amount;
   S.cashedOut += amount;
@@ -146,13 +199,25 @@ function cashOut() {
   S.pot = 0;
   S.streak = 0;
   save();
-  // liderlik servisine skoru bildir (şimdilik dummy, fire-and-forget)
-  if (window.Leaderboard) window.Leaderboard.submitScore({ best: S.best, kasa: S.kasa });
   showToast('+' + money(amount), THEME.cash, 'grow', 1000);
 }
 
-function watchAd() {
+async function watchAd() {
   if (flip && flip.active) return;
+  if (ONLINE) {
+    if (actionBusy) return;
+    actionBusy = true;
+    try {
+      const res = await YTApi.ad();         // { reward, state }
+      applyServerState(res.state);
+      showToast('Reklam ödülü: +' + money(res.reward), THEME.ad);
+    } catch (e) {
+      if (e.status === 429) showToast('Biraz bekle, sonra tekrar izle', THEME.dim);
+      else showToast('Bağlantı hatası', THEME.lose);
+    } finally { actionBusy = false; }
+    return;
+  }
+  // ── OFFLINE ──
   S.kasa += AD_REWARD;
   S.adsWatched++;
   save();
@@ -489,3 +554,13 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'c') cashOut();
   else if (k === 'r') watchAd();
 });
+
+// ─── SUNUCU BAĞLANTISI (dereceli mod) ────────────────────────────────────────
+// YT_API_BASE ayarlıysa sunucu-otoriter moda geç; durum sunucudan hidrat edilir.
+// Ulaşılamazsa oyun sessizce offline (yerel) modda kalır.
+if (window.YTApi && YTApi.base) {
+  YTApi.init().then((r) => {
+    ONLINE = !!r.online;
+    if (r.online && r.state) applyServerState(r.state);
+  }).catch(() => { ONLINE = false; });
+}
