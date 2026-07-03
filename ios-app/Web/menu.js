@@ -77,7 +77,6 @@
   // ─── Ben (istatistikler) ────────────────────────────────────────────────────
   function renderProfile() {
     const s = state() || {};
-    const online = !!(window.YTApi && YTApi.online);
     const total = s.total || 0;
     const wins = s.wins || 0;
     const hitRate = total > 0 ? Math.round((wins / total) * 100) : 0;
@@ -107,50 +106,56 @@
         <div class="profile-sub">${total} atış • rekor seri ${s.best || 0}</div>
       </div>
       <div class="stat-grid">${cards}</div>
-      <div class="page"><p class="muted">${online
-        ? 'İstatistikler sunucuda tutulur ve sıralamayı besler.'
-        : 'Çevrimdışı: istatistikler bu cihazda yerel tutulur, sıralamaya girmez.'}</p></div>`;
+      <div class="page"><p class="muted">İstatistikler bu cihazda yerel olarak tutulur.</p></div>`;
   }
 
-  // ─── Liderlik Tablosu (sunucudan; toplam kazanca göre) ──────────────────────
-  async function renderLeaderboard() {
-    body.innerHTML = '<div class="lb-loading"><div class="spinner"></div>Liderlik tablosu yükleniyor…</div>';
-    try {
-      const res = await window.Leaderboard.getTop(20);
-      if (res.offline) {
-        body.innerHTML = `<div class="page">
-          <p class="muted">Sıralama çevrimiçi oynayınca (dereceli mod) etkinleşir.
-          İnternet bağlantısı ve sunucu gerektirir.</p>
-          <p class="muted">Sıralama <b>toplam kazanca</b> göredir ve sunucuda
-          hesaplandığı için hile korumalıdır.</p></div>`;
-        return;
-      }
-      const rows = res.top.map((e) => {
-        const cls = e.rank <= 3 ? ` top${e.rank}` : '';
-        return `<li class="lb-row">
-          <span class="lb-rank${cls}">${e.rank}</span>
-          <span class="lb-name">${escapeHtml(e.name)}</span>
-          <span class="lb-score">${fmtMoney(e.total)}</span>
-        </li>`;
-      }).join('');
-      const you = res.you;
-      // Kendi sıran ilk 20'de değilse ayrıca alta ekle
-      const inTop = you && res.top.some((e) => e.rank === you.rank);
-      const youRow = (you && !inTop) ? `<li class="lb-row lb-you">
-          <span class="lb-rank">${you.rank}</span>
-          <span class="lb-name">${escapeHtml(you.name)} (Sen)</span>
-          <span class="lb-score">${fmtMoney(you.total)}</span>
-        </li>` : '';
-      const empty = res.top.length === 0
-        ? '<div class="page"><p class="muted">Henüz kimse çekilmemiş. İlk sen ol!</p></div>' : '';
-      body.innerHTML = `<ul class="lb-list">${rows}${youRow}</ul>${empty}
-        <div class="page"><p class="muted">Sıralama toplam kazanca göredir; sunucuda hesaplanır.</p></div>`;
-    } catch (err) {
-      body.innerHTML = `<div class="lb-error">Liderlik tablosu yüklenemedi.<br>
-        <button class="btn ghost" id="lbRetry" style="margin-top:12px">Tekrar dene</button></div>`;
-      const r = document.getElementById('lbRetry');
-      if (r) r.addEventListener('click', renderLeaderboard);
-    }
+  // ─── Liderlik Tablosu (yerel haftalık yarış) ────────────────────────────────
+  let lbTimer = null;
+
+  function fmtCountdown(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+    if (d > 0) return `${d}g ${h}s`;
+    if (h > 0) return `${h}s ${m}dk`;
+    return `${m}dk`;
+  }
+
+  function renderLeaderboard() {
+    const board = window.Leaderboard.getBoard();
+    const you = board.you || { rank: board.total, score: 0 };
+    const TOPN = 20;
+    const top = board.rows.slice(0, TOPN);
+
+    const rowHtml = (e) => {
+      const cls = e.rank <= 3 ? ` top${e.rank}` : '';
+      return `<li class="lb-row${e.you ? ' lb-you' : ''}">
+        <span class="lb-rank${cls}">${e.rank}</span>
+        <span class="lb-name">${escapeHtml(e.name)}</span>
+        <span class="lb-score">${fmtMoney(e.score)}</span>
+      </li>`;
+    };
+    const rows = top.map(rowHtml).join('');
+    // Oyuncu ilk 20'de değilse ayrıca alta ekle
+    const youExtra = you.rank > TOPN ? `<li class="lb-sep">···</li>` + rowHtml(you) : '';
+
+    body.innerHTML = `
+      <div class="lb-head">
+        <div class="lb-title">🏆 Haftalık Yarış</div>
+        <div class="lb-timer">Sıfırlanmasına <b id="lbCd">${fmtCountdown(board.msLeft)}</b></div>
+        <div class="lb-you-line">Sıran: <b>${you.rank}</b> / ${board.total}
+          &nbsp;•&nbsp; Bu hafta: <b>${fmtMoney(you.score)}</b></div>
+      </div>
+      <ul class="lb-list">${rows}${youExtra}</ul>
+      <div class="page"><p class="muted">Sıralama bu haftaki kazancına göredir ve
+      her Pazar gece yarısı sıfırlanır.</p></div>`;
+
+    // geri sayımı canlı tut (menü açık kaldıkça)
+    if (lbTimer) clearInterval(lbTimer);
+    lbTimer = setInterval(() => {
+      const cd = document.getElementById('lbCd');
+      if (!cd) { clearInterval(lbTimer); lbTimer = null; return; }
+      cd.textContent = fmtCountdown(window.Leaderboard.getBoard().msLeft);
+    }, 30000);
   }
 
   // ─── Ayarlar ────────────────────────────────────────────────────────────────
