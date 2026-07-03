@@ -41,6 +41,7 @@
 
   // ─── Kök menü ───────────────────────────────────────────────────────────────
   const ROOT_ITEMS = [
+    { key: 'profile',     ico: '👤', label: 'Ben' },
     { key: 'leaderboard', ico: '🏆', label: 'Liderlik Tablosu' },
     { key: 'settings',    ico: '⚙️', label: 'Ayarlar' },
     { key: 'privacy',     ico: '🔒', label: 'Gizlilik Politikası' },
@@ -67,9 +68,45 @@
     titleEl.textContent = label;
     backBtn.classList.remove('hidden');
     body.scrollTop = 0;
+    if (key === 'profile')     return renderProfile();
     if (key === 'leaderboard') return renderLeaderboard();
     if (key === 'settings')    return renderSettings();
     body.innerHTML = PAGES[key] || '<div class="page"><p>Bulunamadı.</p></div>';
+  }
+
+  // ─── Ben (istatistikler) ────────────────────────────────────────────────────
+  function renderProfile() {
+    const s = state() || {};
+    const total = s.total || 0;
+    const wins = s.wins || 0;
+    const hitRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+
+    const stats = [
+      { ico: '💰', label: 'Rekor çekiliş',  value: fmtMoney(s.bestCashout || 0), accent: true },
+      { ico: '🏦', label: 'Toplam çekilen', value: fmtMoney(s.cashedOut || 0) },
+      { ico: '✋', label: 'Çekiliş sayısı',  value: (s.cashOutCount || 0) + ' kez' },
+      { ico: '📺', label: 'İzlenen reklam',  value: (s.adsWatched || 0) + ' kez' },
+      { ico: '🔥', label: 'Rekor seri',      value: (s.best || 0) },
+      { ico: '🎯', label: 'İsabet (strike)', value: wins + ' / ' + total },
+      { ico: '📈', label: 'İsabet oranı',    value: '%' + hitRate },
+      { ico: '💵', label: 'Kasa',            value: fmtMoney(s.kasa || 0) },
+    ];
+
+    const cards = stats.map((st) => `
+      <div class="stat-card${st.accent ? ' accent' : ''}">
+        <span class="stat-ico">${st.ico}</span>
+        <span class="stat-val">${st.value}</span>
+        <span class="stat-lbl">${st.label}</span>
+      </div>`).join('');
+
+    body.innerHTML = `
+      <div class="profile-hero">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-name">Sen</div>
+        <div class="profile-sub">${total} atış • rekor seri ${s.best || 0}</div>
+      </div>
+      <div class="stat-grid">${cards}</div>
+      <div class="page"><p class="muted">İstatistikler bu cihazda yerel olarak tutulur.</p></div>`;
   }
 
   // ─── Liderlik Tablosu (dummy servis) ────────────────────────────────────────

@@ -37,17 +37,20 @@ const KEY = 'yazitura_v2';
 
 function defaultState() {
   return {
-    kasa: 1,        // banka (USD) — kalıcı; başlangıçta $1 (ilk giriş ücreti)
-    pot: 0,         // güncel tur birikimi
-    streak: 0,      // güncel seri
-    best: 0,        // en iyi seri
-    total: 0,       // toplam atış
-    wins: 0,        // doğru tahmin
-    cashedOut: 0,   // ömür boyu çekilen toplam
+    kasa: 1,          // banka (USD) — kalıcı; başlangıçta $1 (ilk giriş ücreti)
+    pot: 0,           // güncel tur birikimi
+    streak: 0,        // güncel seri
+    best: 0,          // en iyi seri
+    total: 0,         // toplam atış
+    wins: 0,          // doğru tahmin (isabet / strike)
+    cashedOut: 0,     // ömür boyu çekilen toplam
+    cashOutCount: 0,  // kaç kere çekildi
+    bestCashout: 0,   // tek seferde en yüksek çekiliş (rekor)
+    adsWatched: 0,    // kaç kere reklam izlendi
   };
 }
 
-let S = load() || defaultState();
+let S = Object.assign(defaultState(), load() || {}); // eski kayıtlara yeni alanları ekle
 window.S = S; // menü (menu.js) durumu okuyabilsin
 
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -138,6 +141,8 @@ function cashOut() {
   const amount = S.pot;
   S.kasa += amount;
   S.cashedOut += amount;
+  S.cashOutCount++;
+  if (amount > S.bestCashout) S.bestCashout = amount;
   S.pot = 0;
   S.streak = 0;
   save();
@@ -149,6 +154,7 @@ function cashOut() {
 function watchAd() {
   if (flip && flip.active) return;
   S.kasa += AD_REWARD;
+  S.adsWatched++;
   save();
   showToast('Reklam ödülü: +' + money(AD_REWARD), THEME.ad);
 }

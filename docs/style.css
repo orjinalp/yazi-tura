@@ -125,6 +125,38 @@ html, body {
 .toggle.on { background: #51cf66; }
 .toggle.on .knob { left: 25px; }
 
+/* Ben (profil / istatistik) */
+.profile-hero {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 22px 18px 18px; text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.profile-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.12); margin-bottom: 10px;
+}
+.profile-name { font-weight: 800; font-size: 1.15rem; color: #f5f7ff; }
+.profile-sub { color: #8b93b5; font-size: 0.85rem; margin-top: 3px; }
+.stat-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px;
+}
+.stat-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px; padding: 14px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-card.accent {
+  grid-column: 1 / -1; align-items: center; text-align: center;
+  background: rgba(255,212,59,0.10); border-color: rgba(255,212,59,0.30);
+}
+.stat-ico { font-size: 1.15rem; }
+.stat-card.accent .stat-ico { font-size: 1.5rem; }
+.stat-val { font-weight: 800; font-size: 1.15rem; color: #f5f7ff; }
+.stat-card.accent .stat-val { font-size: 1.7rem; color: #ffd43b; }
+.stat-lbl { color: #8b93b5; font-size: 0.8rem; }
+
 /* Liderlik tablosu */
 .lb-list { list-style: none; padding: 6px 0; }
 .lb-row {
