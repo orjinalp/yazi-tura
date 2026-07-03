@@ -5,4 +5,14 @@ ios-app/build/
 ios-app/DerivedData/
 **/xcuserdata/
 .DS_Store
-.claude/
+
+# fastlane + imzalama sırları (asla commit'lenmez)
+ios-app/fastlane/report.xml
+ios-app/fastlane/Preview.html
+ios-app/fastlane/test_output/
+ios-app/vendor/
+ios-app/.bundle/
+*.p8
+*.p12
+*.mobileprovision
+*.certSigningRequest

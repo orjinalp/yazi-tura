@@ -1,0 +1,56 @@
+name: iOS Release (App Store)
+
+# Windows/tarayıcıdan çalıştırılır: Actions ▸ "iOS Release (App Store)" ▸ Run workflow.
+# Bulut macOS runner'ında: web'i senkronlar, Xcode projesini üretir, imzalar,
+# .ipa arşivler ve App Store Connect'e (TestFlight işleme) yükler.
+#
+# Gerekli GitHub Secrets (Settings ▸ Secrets and variables ▸ Actions):
+#   ASC_KEY_ID          — App Store Connect API anahtarının Key ID'si
+#   ASC_ISSUER_ID       — API anahtarının Issuer ID'si
+#   ASC_KEY_P8_BASE64   — .p8 anahtar dosyasının base64 hali (aşağıda nasıl olduğu README'de)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-upload:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode sürümünü seç
+        run: sudo xcode-select -s /Applications/Xcode_16.app
+
+      - name: XcodeGen kur
+        run: brew install xcodegen
+
+      - name: Web'i senkronla + projeyi üret
+        working-directory: ios-app
+        run: |
+          chmod +x sync-web.sh
+          ./sync-web.sh
+          xcodegen generate
+
+      - name: Ruby + fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: ios-app
+
+      - name: fastlane ile derle ve yükle
+        working-directory: ios-app
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: bundle exec fastlane release
+
+      - name: Arşiv/ipa'yı çıktı olarak sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yazitura-ipa
+          path: ios-app/build/*.ipa
+          if-no-files-found: ignore

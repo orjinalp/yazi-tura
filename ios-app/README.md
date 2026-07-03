@@ -60,6 +60,45 @@ re-sync it into the app:
    Organizer, then complete the listing (screenshots in `../app-store/`,
    description, age rating, privacy → "Data Not Collected") and submit.
 
+## Publish from Windows — no Mac (GitHub Actions + fastlane)
+
+Bu repoda bulut macOS runner'ında derleyip App Store Connect'e yükleyen bir
+workflow var (`.github/workflows/ios-release.yml`). Mac gerekmez; her şeyi
+Windows'ta tarayıcıdan yaparsın.
+
+**Bir kerelik hazırlık (tarayıcıda):**
+
+1. **Apple Developer Program** üyeliğinin aktif olduğundan emin ol ($99/yıl).
+2. App Store Connect ▸ **Users and Access ▸ Integrations (Keys)** ▸ **App Store
+   Connect API** ▸ **+** ile bir anahtar üret (rol: *App Manager* yeterli).
+   - **Key ID** ve **Issuer ID**'yi not al.
+   - `AuthKey_XXXXXX.p8` dosyasını indir (bir kez indirilebilir!).
+3. `.p8` dosyasını **base64**'e çevir (Windows PowerShell):
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("AuthKey_XXXXXX.p8")) | Set-Clipboard
+   ```
+   (panoya kopyalar.)
+4. GitHub ▸ repo ▸ **Settings ▸ Secrets and variables ▸ Actions** ▸ New secret:
+   - `ASC_KEY_ID` = Key ID
+   - `ASC_ISSUER_ID` = Issuer ID
+   - `ASC_KEY_P8_BASE64` = 3. adımdaki base64 metin
+5. App Store Connect'te uygulama kaydını aç (Apps ▸ + ▸ New App, bundle id
+   `com.orjinalp.yazitura`). Team'in `2CTYTPF2MA` değilse `project.yml` ve
+   `fastlane/Fastfile` içindeki `TEAM_ID`'yi kendi Team ID'inle değiştir.
+
+**Her yayın (tarayıcıda):**
+
+GitHub ▸ repo ▸ **Actions** ▸ *iOS Release (App Store)* ▸ **Run workflow**.
+Runner web'i senkronlar, projeyi üretir, imzalar, `.ipa` arşivler ve
+App Store Connect'e yükler. Birkaç dakika sonra build **TestFlight**'ta işlenir;
+oradan sürüme ekleyip listelemeyi tamamlar (açıklama `../app-store/`, ekran
+görüntüleri `../app-store/screenshots/`, App Privacy = *Data Not Collected*) ve
+**Submit for Review** dersin.
+
+> İlk çalıştırmada imzalamayla ilgili küçük bir ayar gerekebilir (CI iş
+> imzalaması zaman zaman elle bir düzeltme ister). Actions log'unu paylaşırsan
+> hatayı birlikte gideririz.
+
 ### Notes for App Store review
 
 - The game stores save data in `localStorage` only; no data leaves the device,

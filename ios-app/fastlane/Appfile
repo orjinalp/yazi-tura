@@ -1,0 +1,2 @@
+app_identifier("com.orjinalp.yazitura")
+# apple_id / team bilgisi App Store Connect API anahtarından gelir; burada gerekmez.

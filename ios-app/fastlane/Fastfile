@@ -1,0 +1,59 @@
+require "shellwords"
+
+default_platform(:ios)
+
+APP_ID = "com.orjinalp.yazitura"
+TEAM_ID = "2CTYTPF2MA"
+
+platform :ios do
+  desc "Derle, imzala ve App Store Connect'e (TestFlight işleme) yükle"
+  lane :release do
+    # CI için geçici keychain oluşturur (sertifikaların kurulacağı yer)
+    setup_ci
+
+    # App Store Connect API anahtarı — Mac/parola/2FA gerektirmez
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_P8_BASE64"),
+      is_key_content_base64: true,
+      in_house: false
+    )
+
+    # Dağıtım (Apple Distribution) sertifikasını runner keychain'ine kur/oluştur
+    cert(api_key: api_key)
+
+    # App Store provisioning profile'ı indir/oluştur
+    sigh(api_key: api_key, app_identifier: APP_ID, platform: "ios")
+    profile_name = ENV["sigh_#{APP_ID}_appstore_profile-name"]
+
+    build_number = ENV["BUILD_NUMBER"] || "1"
+
+    build_app(
+      project: "YaziTura.xcodeproj",
+      scheme: "YaziTura",
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "build",
+      output_name: "YaziTura.ipa",
+      xcargs: [
+        "-allowProvisioningUpdates",
+        "DEVELOPMENT_TEAM=#{TEAM_ID}",
+        "CODE_SIGN_STYLE=Manual",
+        "CODE_SIGN_IDENTITY=Apple Distribution",
+        "PROVISIONING_PROFILE_SPECIFIER=#{profile_name}",
+        "CURRENT_PROJECT_VERSION=#{build_number}"
+      ].shelljoin,
+      export_options: {
+        provisioningProfiles: { APP_ID => profile_name }
+      }
+    )
+
+    # Binary'yi App Store Connect'e yükle (TestFlight'ta işlenir).
+    # Listeleme/gönderim tarayıcıdan tamamlanır.
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
