@@ -27,7 +27,7 @@ const THEME = {
 };
 
 // ─── EKONOMİ ─────────────────────────────────────────────────────────────────
-const AD_REWARD = 1.00;   // reklam ödülü (dummy)
+const AD_REWARD = 10.00;   // reklam ödülü (dummy)
 const FLIP_COST = 1.00;   // yeni tura giriş ücreti (kasadan düşer)
 // Pot her doğru tahminde ikiye katlanır: seri n → 2^n dolar.
 function potAt(streak) { return streak <= 0 ? 0 : Math.pow(2, streak); }
@@ -364,12 +364,12 @@ function draw(now) {
   ctx.font = `800 ${Math.floor(Math.min(W * 0.10, 44))}px 'Segoe UI', sans-serif`;
   ctx.fillText(money(S.kasa), L.cx, H * 0.165);
 
-  // reklam çipi — kasanın hemen yanında, +1$ ekler
+  // reklam çipi — kasanın hemen yanında, reklam ödülünü ekler
   const kasaW = ctx.measureText(money(S.kasa)).width;
   const chipH = Math.min(34, H * 0.045);
-  const chipW = chipH * 2.2;
+  const chipW = chipH * 2.6;
   adBtn = { x: L.cx + kasaW / 2 + 12, y: H * 0.165 - chipH / 2, w: chipW, h: chipH };
-  drawButton(adBtn.x, adBtn.y, adBtn.w, adBtn.h, '📺 +1$', null, THEME.ad, busy);
+  drawButton(adBtn.x, adBtn.y, adBtn.w, adBtn.h, '📺 +' + money(AD_REWARD), null, THEME.ad, busy);
 
   // pot
   ctx.font = `700 ${Math.floor(Math.min(W * 0.042, 17))}px 'Segoe UI', sans-serif`;
