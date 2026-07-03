@@ -32,6 +32,29 @@ jobs:
           ./sync-web.sh
           xcodegen generate
 
+      - name: API anahtarını (.p8) hazırla
+        working-directory: ios-app
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          if [ -z "$ASC_KEY_P8_BASE64" ]; then
+            echo "::error::ASC_KEY_P8_BASE64 secret'i boş. App Store Connect API anahtarını (.p8) ekle (base64 önerilir)."
+            exit 1
+          fi
+          mkdir -p fastlane
+          # Secret ham .p8 (PEM) de olabilir, base64 de — ikisini de kabul et.
+          if printf '%s' "$ASC_KEY_P8_BASE64" | grep -q "BEGIN PRIVATE KEY"; then
+            printf '%s' "$ASC_KEY_P8_BASE64" > fastlane/AuthKey.p8
+          else
+            printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > fastlane/AuthKey.p8 2>/dev/null || true
+          fi
+          if ! grep -q "BEGIN PRIVATE KEY" fastlane/AuthKey.p8; then
+            echo "::error::Anahtar geçerli bir .p8 değil. Secret'a ya ham .p8 metnini ya da 'base64' halini yapıştır (README'deki PowerShell komutu)."
+            exit 1
+          fi
+          echo "ASC_KEY_PATH=$(pwd)/fastlane/AuthKey.p8" >> "$GITHUB_ENV"
+          echo "API anahtarı hazır ($(wc -c < fastlane/AuthKey.p8) bayt)."
+
       - name: Ruby + fastlane
         uses: ruby/setup-ruby@v1
         with:
@@ -44,7 +67,6 @@ jobs:
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
           BUILD_NUMBER: ${{ github.run_number }}
         run: bundle exec fastlane release
 

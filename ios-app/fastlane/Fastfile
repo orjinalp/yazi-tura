@@ -11,12 +11,12 @@ platform :ios do
     # CI için geçici keychain oluşturur (sertifikaların kurulacağı yer)
     setup_ci
 
-    # App Store Connect API anahtarı — Mac/parola/2FA gerektirmez
+    # App Store Connect API anahtarı — Mac/parola/2FA gerektirmez.
+    # Anahtar dosyası workflow'un "API anahtarını hazırla" adımında yazılır.
     api_key = app_store_connect_api_key(
       key_id: ENV.fetch("ASC_KEY_ID"),
       issuer_id: ENV.fetch("ASC_ISSUER_ID"),
-      key_content: ENV.fetch("ASC_KEY_P8_BASE64"),
-      is_key_content_base64: true,
+      key_filepath: ENV.fetch("ASC_KEY_PATH"),
       in_house: false
     )
 
