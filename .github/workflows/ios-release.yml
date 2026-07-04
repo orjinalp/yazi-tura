@@ -55,6 +55,14 @@ jobs:
           echo "ASC_KEY_PATH=$(pwd)/fastlane/AuthKey.p8" >> "$GITHUB_ENV"
           echo "API anahtarı hazır ($(wc -c < fastlane/AuthKey.p8) bayt)."
 
+      - name: Kimlik değerlerini doğrula (maskesiz parça)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          echo "KEY_ID  : uzunluk=${#ASC_KEY_ID}  bas=${ASC_KEY_ID:0:3}  son=${ASC_KEY_ID: -3}   (beklenen: 10 / 3XX / D46)"
+          echo "ISSUER  : uzunluk=${#ASC_ISSUER_ID}  bas=${ASC_ISSUER_ID:0:3}  son=${ASC_ISSUER_ID: -3}   (beklenen: 36 / 12a / e3a)"
+
       - name: Ruby + fastlane
         uses: ruby/setup-ruby@v1
         with:
