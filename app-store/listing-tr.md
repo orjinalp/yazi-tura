@@ -29,10 +29,13 @@ Bir taraf seç: Yazı ya da Tura. Doğru bilirsen serin büyür ve potun İKİYE
 Not: Oyun içindeki tüm para birimleri (kasa, pot) sanaldır; gerçek para değeri taşımaz ve gerçek parayla oynanmaz.
 
 ## Destek URL'si (Support URL) — ZORUNLU
-(GitHub Pages sayfan veya bir iletişim sayfası — örn. https://<kullanıcıadın>.github.io/yazi-tura/)
+https://yazitura.alpcan.dev/support.html
 
 ## Pazarlama URL'si (Marketing URL) — opsiyonel
-(boş bırakılabilir)
+https://yazitura.alpcan.dev/
+
+## Gizlilik Politikası URL'si (Privacy Policy URL)
+https://yazitura.alpcan.dev/privacy.html
 
 ## Kategori
 Birincil: Games  → Alt tür önerisi: Casual
