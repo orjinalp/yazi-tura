@@ -13,6 +13,9 @@ name: iOS Release (App Store)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - codex/upload-app-store-assets
 
 jobs:
   build-and-upload:
