@@ -13,6 +13,14 @@ name: iOS Release (App Store)
 
 on:
   workflow_dispatch:
+    inputs:
+      lane:
+        description: "fastlane lane (release=derle+yükle, metadata=sadece görsel+metadata)"
+        type: choice
+        options:
+          - release
+          - metadata
+        default: release
 
 jobs:
   build-and-upload:
@@ -114,7 +122,7 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           BUILD_NUMBER: ${{ github.run_number }}
-        run: bundle exec fastlane release
+        run: bundle exec fastlane ${{ inputs.lane || 'release' }} --verbose
 
       - name: Arşiv/ipa'yı çıktı olarak sakla
         if: always()
