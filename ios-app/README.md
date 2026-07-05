@@ -57,8 +57,9 @@ re-sync it into the app:
    Or in Xcode: select **Any iOS Device**, Product ▸ Archive, then
    Organizer ▸ Distribute App ▸ App Store Connect.
 4. **Upload** the `.ipa` (build/export/) with the **Transporter** app or
-   Organizer, then complete the listing (screenshots in `../app-store/`,
-   description, age rating, privacy → "Data Not Collected") and submit.
+   Organizer, then complete App Privacy in App Store Connect and submit.
+   Listing metadata/screenshots live in `fastlane/metadata` and
+   `../app-store/screenshots`.
 
 ## Publish from Windows — no Mac (GitHub Actions + fastlane)
 
@@ -96,11 +97,19 @@ Windows'ta tarayıcıdan yaparsın.
 **Her yayın (tarayıcıda):**
 
 GitHub ▸ repo ▸ **Actions** ▸ *iOS Release (App Store)* ▸ **Run workflow**.
-Runner web'i senkronlar, projeyi üretir, imzalar, `.ipa` arşivler ve
-App Store Connect'e yükler. Birkaç dakika sonra build **TestFlight**'ta işlenir;
-oradan sürüme ekleyip listelemeyi tamamlar (açıklama `../app-store/`, ekran
-görüntüleri `../app-store/screenshots/`, App Privacy = *Data Not Collected*) ve
-**Submit for Review** dersin.
+Runner web'i senkronlar, projeyi üretir, imzalar, `.ipa` arşivler, TestFlight'a
+yükler ve App Store listeleme metadata/screenshot/copyright alanlarını günceller.
+Bir kaç dakika sonra build **TestFlight**'ta işlenir; App Store Connect'te sürüme
+ekleyip **Submit for Review** dersin.
+
+**App Privacy (bir kere, admin hesapla):**
+
+App Store Connect ▸ Apps ▸ Yazı Tura ▸ **App Privacy** ▸ **Get Started** ▸
+**No, we do not collect data from this app** ▸ **Save** ▸ **Publish**.
+
+Not: App Store Connect API key bu privacy sorusunu yayınlayamaz. Repo'da
+`fastlane/app_privacy_details.json` hazır; bunu Fastlane ile yüklemek istersen
+Apple ID owner/admin hesabı gerekir.
 
 > İlk çalıştırmada imzalamayla ilgili küçük bir ayar gerekebilir (CI iş
 > imzalaması zaman zaman elle bir düzeltme ister). Actions log'unu paylaşırsan

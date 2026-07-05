@@ -1,0 +1,14 @@
+Yazı Tura - basit ama tutku yaratan bir şans ve seri oyunu!
+
+Bir taraf seç: Yazı ya da Tura. Doğru bilirsen serin büyür ve potun İKİYE KATLANIR. Seri 8'de 256$, seri 9'da 512$... Kaybetmeden önce çekil ve biriken potu kasana aktar. Ne kadar açgözlü olacağın sana kalmış: bir el daha mı, yoksa güvenli kar mı?
+
+ÖZELLİKLER
+- Tek dokunuşla oynanış: Yazı ya da Tura
+- Her doğru tahminde pot ikiye katlanır
+- İstediğin an ÇEKİL ile potu güvene al
+- Kasa, güncel seri ve rekor takibi
+- Liderlik tablosu
+- Akıcı tasarım ve tatmin edici para animasyonu
+- Tamamen çevrimdışı: internet gerekmez
+
+Not: Oyun içindeki tüm para birimleri (kasa, pot) sanaldır; gerçek para değeri taşımaz ve gerçek parayla oynanmaz.

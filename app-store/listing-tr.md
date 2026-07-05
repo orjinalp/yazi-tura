@@ -37,6 +37,19 @@ https://yazitura.alpcan.dev/
 ## Gizlilik Politikası URL'si (Privacy Policy URL)
 https://yazitura.alpcan.dev/privacy.html
 
+## Ekran Görüntüleri
+13-inch iPad:
+- `app-store/screenshots/ipad-01-main.png` (2048x2732)
+- `app-store/screenshots/ipad-02-menu.png` (2048x2732)
+
+6.5-inch iPhone:
+- `app-store/screenshots/01-main-6.5.png` (1242x2688)
+- `app-store/screenshots/02-menu-6.5.png` (1242x2688)
+
+6.9-inch iPhone:
+- `app-store/screenshots/01-main-6.9.png` (1290x2796)
+- `app-store/screenshots/02-menu-6.9.png` (1290x2796)
+
 ## Kategori
 Birincil: Games  → Alt tür önerisi: Casual
 
@@ -55,4 +68,6 @@ veri toplanmaz/gönderilmez. (Liderlik tablosu şu an demo/yerel verilerle çal�
 Free (Ücretsiz)
 
 ## Telif/Hak
+App Store Connect copyright alanı: `2026 Alpcan Utku`
+
 Bütün içerik (kod + grafikler) sana ait; üçüncü taraf marka/figür kullanılmıyor.

@@ -2,7 +2,7 @@ name: iOS Release (App Store)
 
 # Windows/tarayıcıdan çalıştırılır: Actions ▸ "iOS Release (App Store)" ▸ Run workflow.
 # Bulut macOS runner'ında: web'i senkronlar, Xcode projesini üretir, imzalar,
-# .ipa arşivler ve App Store Connect'e (TestFlight işleme) yükler.
+# .ipa arşivler, TestFlight'a yükler ve App Store listeleme metadata/screenshot alanlarını günceller.
 #
 # Gerekli GitHub Secrets (Settings ▸ Secrets and variables ▸ Actions):
 #   ASC_KEY_ID          — App Store Connect API anahtarının Key ID'si
@@ -108,7 +108,7 @@ jobs:
           bundler-cache: true
           working-directory: ios-app
 
-      - name: fastlane ile derle ve yükle
+      - name: fastlane ile derle, yükle ve listelemeyi güncelle
         working-directory: ios-app
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}

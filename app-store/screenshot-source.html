@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1a2444">
+<title>Yazi Tura Screenshot Source</title>
+<link rel="stylesheet" href="../style.css?v=screenshot">
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<button id="menuBtn" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+
+<div id="menuOverlay" class="hidden" aria-hidden="true">
+  <aside id="menuPanel" role="dialog" aria-label="Menu">
+    <header id="menuHeader">
+      <button id="menuBack" class="icon-btn hidden" aria-label="Geri">&lsaquo;</button>
+      <h2 id="menuTitle">Menu</h2>
+      <button id="menuClose" class="icon-btn" aria-label="Kapat">&times;</button>
+    </header>
+    <div id="menuBody"></div>
+  </aside>
+</div>
+
+<script>
+  localStorage.setItem('yazitura_v2', JSON.stringify({
+    kasa: 64,
+    pot: 16,
+    streak: 4,
+    best: 6,
+    total: 18,
+    wins: 12,
+    cashedOut: 48,
+    cashOutCount: 3,
+    bestCashout: 32,
+    adsWatched: 1
+  }));
+</script>
+<script src="../leaderboard.js?v=screenshot"></script>
+<script src="../game.js?v=screenshot"></script>
+<script src="../menu.js?v=screenshot"></script>
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const mode = new URLSearchParams(window.location.search).get('mode') || 'main';
+      if (typeof showToast === 'function') {
+        showToast('Doğru! Pot 16$', '#51cf66', 'plain', 60 * 60 * 1000);
+      }
+      if (mode === 'menu') {
+        document.getElementById('menuBtn').click();
+      }
+    }, 80);
+  });
+</script>
+</body>
+</html>
