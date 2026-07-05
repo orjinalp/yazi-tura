@@ -126,4 +126,29 @@ platform :ios do
 
     upload_store_listing(api_key: api_key)
   end
+
+  desc "Ekran görüntülerini + telif bilgisini App Store Connect'e yükle"
+  lane :metadata do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_filepath: ENV.fetch("ASC_KEY_PATH"),
+      in_house: false
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      app_identifier: APP_ID,
+      skip_binary_upload: true,          # binary zaten TestFlight'ta
+      skip_metadata: false,              # telif alanını yaz
+      skip_screenshots: false,
+      overwrite_screenshots: true,
+      screenshots_path: "./fastlane/screenshots",
+      copyright: "© 2026 Alpcan Tuna",
+      force: true,                       # HTML önizleme/onay isteme
+      run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false,
+      submit_for_review: false
+    )
+  end
 end
