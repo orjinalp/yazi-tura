@@ -82,7 +82,14 @@ Windows'ta tarayıcıdan yaparsın.
    - `ASC_KEY_ID` = Key ID
    - `ASC_ISSUER_ID` = Issuer ID
    - `ASC_KEY_P8_BASE64` = 3. adımdaki base64 metin
-5. App Store Connect'te uygulama kaydını aç (Apps ▸ + ▸ New App, bundle id
+5. Apple Distribution sertifikanı `.p12` olarak export et ve base64'e çevir:
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("AppleDistribution.p12")) | Set-Clipboard
+   ```
+   GitHub Actions secret olarak ekle:
+   - `IOS_DIST_CERT_P12_BASE64` = panodaki base64 metin
+   - `IOS_DIST_CERT_P12_PASSWORD` = `.p12` export ederken verdiğin parola
+6. App Store Connect'te uygulama kaydını aç (Apps ▸ + ▸ New App, bundle id
    `com.orjinalp.yazitura`). Team'in `2CTYTPF2MA` değilse `project.yml` ve
    `fastlane/Fastfile` içindeki `TEAM_ID`'yi kendi Team ID'inle değiştir.
 

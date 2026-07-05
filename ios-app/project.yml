@@ -12,7 +12,7 @@ settings:
     CURRENT_PROJECT_VERSION: "2"
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: "2CTYTPF2MA"
-    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_STYLE: Manual
 
 targets:
   YaziTura:
@@ -30,6 +30,7 @@ targets:
       base:
         PRODUCT_NAME: YaziTura
         PRODUCT_BUNDLE_IDENTIFIER: com.orjinalp.yazitura
+        CODE_SIGN_IDENTITY: "Apple Distribution"
         INFOPLIST_FILE: Sources/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

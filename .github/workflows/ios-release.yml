@@ -8,6 +8,8 @@ name: iOS Release (App Store)
 #   ASC_KEY_ID          — App Store Connect API anahtarının Key ID'si
 #   ASC_ISSUER_ID       — API anahtarının Issuer ID'si
 #   ASC_KEY_P8_BASE64   — .p8 anahtar dosyasının base64 hali (aşağıda nasıl olduğu README'de)
+#   IOS_DIST_CERT_P12_BASE64 — Apple Distribution sertifikasının .p12 export'u (base64)
+#   IOS_DIST_CERT_P12_PASSWORD — .p12 export parolası
 
 on:
   workflow_dispatch:
@@ -54,6 +56,42 @@ jobs:
           fi
           echo "ASC_KEY_PATH=$(pwd)/fastlane/AuthKey.p8" >> "$GITHUB_ENV"
           echo "API anahtarı hazır ($(wc -c < fastlane/AuthKey.p8) bayt)."
+
+      - name: Apple Distribution sertifikasını içe aktar
+        working-directory: ios-app
+        env:
+          IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          IOS_DIST_CERT_P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: yazi-tura-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          if [ -z "$IOS_DIST_CERT_P12_BASE64" ]; then
+            echo "::error::IOS_DIST_CERT_P12_BASE64 secret'i boş. Apple Distribution .p12 sertifikasını base64 olarak ekle."
+            exit 1
+          fi
+          if [ -z "$IOS_DIST_CERT_P12_PASSWORD" ]; then
+            echo "::error::IOS_DIST_CERT_P12_PASSWORD secret'i boş. .p12 export parolasını ekle."
+            exit 1
+          fi
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/apple_distribution.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          printf '%s' "$IOS_DIST_CERT_P12_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" \
+            -P "$IOS_DIST_CERT_P12_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 
       - name: Kimlik değerlerini doğrula (maskesiz parça)
         env:
