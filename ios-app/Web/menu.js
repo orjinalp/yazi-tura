@@ -192,13 +192,15 @@
     privacy: `<div class="page">
       <p class="muted">Son güncelleme: 2026</p>
       <h3>Gizlilik Politikası</h3>
-      <p>${APP_NAME}, kişisel verilerini toplamaz. Oyun ilerlemen (seri, rekor
-      ve kalkan istatistikleri) yalnızca cihazının yerel depolamasında
-      (localStorage) tutulur ve hiçbir sunucuya gönderilmez.</p>
+      <p>${APP_NAME}, oyun ilerlemeni (seri, rekor ve kalkan istatistikleri)
+      yalnızca cihazının yerel depolamasında (localStorage) tutar ve hiçbir
+      sunucuya göndermez.</p>
       <h3>Reklamlar</h3>
-      <p>Uygulamadaki reklam izleme akışı şu an bir gösterimdir ve üçüncü taraf
-      reklam ağı çalıştırmaz. İleride gerçek reklam ağı entegre edilirse, ilgili
-      ağın veri işleme koşulları bu politikada belirtilecektir.</p>
+      <p>iOS uygulamasında reklamlar Google AdMob üzerinden gösterilebilir.
+      Google ve iş ortakları reklam sunumu, ölçüm ve kötüye kullanım önleme
+      amacıyla cihaz/reklam tanımlayıcıları, yaklaşık konum, reklam
+      etkileşimleri, kullanım verileri ve tanılama verileri gibi bilgileri
+      işleyebilir.</p>
       <h3>Çocukların Gizliliği</h3>
       <p>Uygulama, 13 yaş altı çocuklardan bilerek veri toplamaz.</p>
       <h3>İletişim</h3>

@@ -24,7 +24,7 @@ Bir taraf seç: Yazı ya da Tura. Doğru tahminlerin serini büyütür, rekorun 
 • Güncel seri, rekor seri ve isabet takibi
 • Haftalık rekor tablosu
 • Akıcı ve şık animasyonlar
-• Tamamen çevrimdışı — internet gerekmez
+• Oyun internetsiz de çalışır; reklamlar için internet bağlantısı gerekebilir
 
 Not: Uygulama yalnızca eğlence amaçlıdır; finansal değer taşıyan veya nakde çevrilebilen hiçbir unsur içermez.
 
@@ -58,9 +58,10 @@ Oyun, üst üste doğru tahmin yapmaya dayalı sade bir casual deneyimdir. Finan
 değer taşıyan veya nakde çevrilebilen hiçbir unsur içermez.
 
 ## App Privacy
-"Data Not Collected" — oyun veriyi yalnızca cihazda (localStorage) saklar; hiçbir
-veri toplanmaz/gönderilmez. (Liderlik tablosu şu an demo/yerel verilerle çalışır.
-İleride gerçek bir sunucuya veya reklam ağına bağlanırsa bu bölüm güncellenmelidir.)
+Oyun verisi yalnızca cihazda (localStorage) saklanır. AdMob reklamları
+etkinleştirildiğinde App Store Connect App Privacy yanıtları Google Mobile Ads /
+AdMob veri kullanımına göre güncellenmelidir. Liderlik tablosu şu an demo/yerel
+verilerle çalışır.
 
 ## Fiyat
 Free (Ücretsiz)

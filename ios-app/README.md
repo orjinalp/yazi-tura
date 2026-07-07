@@ -1,8 +1,9 @@
 # Yazı Tura — iOS App
 
 Native iOS wrapper for the Yazı Tura web game. The game (HTML/Canvas/JS)
-is bundled locally inside the app and runs **fully offline** in a full-screen
-`WKWebView`.
+is bundled locally inside the app and runs in a full-screen `WKWebView`.
+Core gameplay works without a network connection; ads load from AdMob when
+available.
 
 - **Bundle ID:** `com.orjinalp.yazitura`
 - **Display name:** Yazı Tura
@@ -42,6 +43,18 @@ re-sync it into the app:
 ```bash
 ./sync-web.sh
 ```
+
+## Ads
+
+The iOS app uses Google Mobile Ads SDK through Swift Package Manager. The shield
+button asks the native wrapper to show a rewarded ad; the game grants one shield
+only after the SDK reports that the reward was earned.
+
+- App ID in `Sources/Info.plist`: `ca-app-pub-9218266514966883~9453060593`
+- Rewarded ad unit in `Sources/GameViewController.swift`: `ca-app-pub-9218266514966883/1191427193`
+
+Do not click live ads while testing. Use AdMob test devices or temporarily swap
+the rewarded ad unit for Google's demo rewarded ID during local development.
 
 ## Publish to the App Store
 
@@ -104,12 +117,15 @@ ekleyip **Submit for Review** dersin.
 
 **App Privacy (bir kere, admin hesapla):**
 
-App Store Connect ▸ Apps ▸ Yazı Tura ▸ **App Privacy** ▸ **Get Started** ▸
-**No, we do not collect data from this app** ▸ **Save** ▸ **Publish**.
+AdMob etkinse App Store Connect ▸ Apps ▸ Yazı Tura ▸ **App Privacy** bölümünü
+Google Mobile Ads/AdMob veri kullanımına göre doldur. Artık otomatik olarak
+**No, we do not collect data from this app** seçme; oyun verisi yerel kalsa bile
+reklam SDK'sı reklam sunumu ve ölçüm için veri işleyebilir.
 
 Not: App Store Connect API key bu privacy sorusunu yayınlayamaz. Repo'da
-`fastlane/app_privacy_details.json` hazır; bunu Fastlane ile yüklemek istersen
-Apple ID owner/admin hesabı gerekir.
+`fastlane/app_privacy_details.json` eski reklamsız akışa göre hazırlanmıştı;
+canlı AdMob yayını öncesi güncellemeden Fastlane ile yükleme. Apple ID
+owner/admin hesabı gerekir.
 
 > İlk çalıştırmada imzalamayla ilgili küçük bir ayar gerekebilir (CI iş
 > imzalaması zaman zaman elle bir düzeltme ister). Actions log'unu paylaşırsan
@@ -117,8 +133,9 @@ Apple ID owner/admin hesabı gerekir.
 
 ### Notes for App Store review
 
-- The game stores save data in `localStorage` only; no data leaves the device,
-  so App Privacy = **Data Not Collected**.
+- The game stores save data in `localStorage` only, but AdMob may process data
+  for ad delivery, measurement and fraud prevention. Keep App Privacy and the
+  public privacy policy aligned with the live ad setup.
 - This is a single-purpose offline game (not a website shell), which is the
   category Apple's Guideline 4.2 ("minimum functionality") is comfortable with.
   Keep the listing focused on the game itself.

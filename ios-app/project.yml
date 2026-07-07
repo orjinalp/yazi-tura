@@ -14,6 +14,11 @@ settings:
     DEVELOPMENT_TEAM: "2CTYTPF2MA"
     CODE_SIGN_STYLE: Manual
 
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
+    from: 13.6.0
+
 targets:
   YaziTura:
     type: application
@@ -26,6 +31,8 @@ targets:
       - path: Resources/Assets.xcassets
       - path: Web
         type: folder
+    dependencies:
+      - package: GoogleMobileAds
     settings:
       base:
         PRODUCT_NAME: YaziTura

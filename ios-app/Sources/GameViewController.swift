@@ -1,12 +1,21 @@
+import GoogleMobileAds
 import UIKit
 import WebKit
 
 /// Hosts the Yazı Tura web game inside a full-screen WKWebView.
 /// All game assets are bundled locally (see the "Web" folder reference),
-/// so the app runs fully offline.
-final class GameViewController: UIViewController, WKNavigationDelegate {
+/// so the core game can run without a network connection.
+final class GameViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler, FullScreenContentDelegate {
 
     private var webView: WKWebView!
+    private var rewardedAd: RewardedAd?
+    private var isLoadingRewardedAd = false
+    private var isShowingRewardedAd = false
+    private var didEarnRewardForCurrentAd = false
+
+    private enum AdMob {
+        static let rewardedAdUnitID = "ca-app-pub-9218266514966883/1191427193"
+    }
 
     /// Brand background (#0b1020) — matches the web app's theme-color so there
     /// is no white flash before the canvas paints.
@@ -28,6 +37,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
         config.mediaTypesRequiringUserActionForPlayback = []
         // Persist localStorage (the game's save data) across launches.
         config.websiteDataStore = .default()
+        config.userContentController.add(self, name: "rewardedAd")
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
@@ -63,6 +73,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
         super.viewDidLoad()
         view.backgroundColor = headerColor
         loadGame()
+        Task {
+            await loadRewardedAd()
+        }
     }
 
     private func loadGame() {
@@ -76,6 +89,93 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
         // icons and the manifest all resolve relative to index.html.
         let webRoot = indexURL.deletingLastPathComponent()
         webView.loadFileURL(indexURL, allowingReadAccessTo: webRoot)
+    }
+
+    private func loadRewardedAd() async {
+        guard !isLoadingRewardedAd, rewardedAd == nil else { return }
+
+        isLoadingRewardedAd = true
+        do {
+            let ad = try await RewardedAd.load(with: AdMob.rewardedAdUnitID, request: Request())
+            ad.fullScreenContentDelegate = self
+            rewardedAd = ad
+        } catch {
+            #if DEBUG
+            print("AdMob rewarded ad failed to load: \(error.localizedDescription)")
+            #endif
+        }
+        isLoadingRewardedAd = false
+    }
+
+    private func showRewardedAdForShield() {
+        guard !isShowingRewardedAd else { return }
+
+        guard let ad = rewardedAd else {
+            sendRewardedAdResult(success: false, reason: "notReady")
+            Task {
+                await loadRewardedAd()
+            }
+            return
+        }
+
+        rewardedAd = nil
+        isShowingRewardedAd = true
+        didEarnRewardForCurrentAd = false
+        ad.present(from: self) { [weak self] in
+            guard let self else { return }
+
+            self.didEarnRewardForCurrentAd = true
+            self.sendRewardedAdResult(success: true, reason: "earned")
+        }
+    }
+
+    private func sendRewardedAdResult(success: Bool, reason: String) {
+        let payload: [Any] = [success, reason]
+        guard
+            let data = try? JSONSerialization.data(withJSONObject: payload),
+            let json = String(data: data, encoding: .utf8)
+        else { return }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.webView.evaluateJavaScript(
+                "window.ytRewardedAdResult && window.ytRewardedAdResult.apply(window, \(json));"
+            )
+        }
+    }
+
+    func userContentController(_ userContentController: WKUserContentController,
+                               didReceive message: WKScriptMessage) {
+        guard message.name == "rewardedAd" else { return }
+        showRewardedAdForShield()
+    }
+
+    func ad(_ ad: FullScreenPresentingAd,
+            didFailToPresentFullScreenContentWithError error: Error) {
+        #if DEBUG
+        print("AdMob rewarded ad failed to present: \(error.localizedDescription)")
+        #endif
+        isShowingRewardedAd = false
+        didEarnRewardForCurrentAd = false
+        sendRewardedAdResult(success: false, reason: "failed")
+        Task {
+            await loadRewardedAd()
+        }
+    }
+
+    func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        if !didEarnRewardForCurrentAd {
+            sendRewardedAdResult(success: false, reason: "dismissed")
+        }
+
+        isShowingRewardedAd = false
+        didEarnRewardForCurrentAd = false
+        Task {
+            await loadRewardedAd()
+        }
+    }
+
+    deinit {
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "rewardedAd")
     }
 
     // Keep the system status bar visible (clock, Wi-Fi, battery, cellular).

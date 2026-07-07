@@ -107,6 +107,7 @@ resize();
 // ─── OYUN AKIŞI ──────────────────────────────────────────────────────────────
 let flip = null;
 let toast = { msg: '', color: '', mode: 'plain', start: 0, until: 0 };
+let shieldAdPending = false;
 
 function showToast(msg, color, mode, dur) {
   const t0 = performance.now();
@@ -114,8 +115,61 @@ function showToast(msg, color, mode, dur) {
 }
 
 function canClaimShield() {
-  return S.streak > 0 && !S.shieldReady && !S.shieldOfferUsed;
+  return !shieldAdPending && S.streak > 0 && !S.shieldReady && !S.shieldOfferUsed;
 }
+
+function hasNativeRewardedAd() {
+  return Boolean(
+    window.webkit &&
+    window.webkit.messageHandlers &&
+    window.webkit.messageHandlers.rewardedAd
+  );
+}
+
+function grantShieldReward() {
+  if (!canClaimShield()) return;
+
+  S.shieldReady = true;
+  S.shieldOfferUsed = true;
+  S.shieldsBought++;
+  save();
+  showToast('KALKAN HAZIR', THEME.shield, 'plain', 1400);
+}
+
+function requestRewardedShield() {
+  if (!hasNativeRewardedAd()) {
+    grantShieldReward();
+    return;
+  }
+
+  shieldAdPending = true;
+  showToast('REKLAM AÇILIYOR', THEME.shield, 'plain', 1200);
+
+  try {
+    window.webkit.messageHandlers.rewardedAd.postMessage({ action: 'claimShield' });
+  } catch (e) {
+    shieldAdPending = false;
+    showToast('REKLAM AÇILAMADI', THEME.dim);
+  }
+}
+
+window.ytRewardedAdResult = function (success, reason) {
+  if (!shieldAdPending) return;
+
+  shieldAdPending = false;
+
+  if (success) {
+    grantShieldReward();
+    return;
+  }
+
+  const messages = {
+    notReady: 'REKLAM HAZIR DEĞİL',
+    dismissed: 'REKLAM TAMAMLANMADI',
+    failed: 'REKLAM AÇILAMADI',
+  };
+  showToast(messages[reason] || 'REKLAM AÇILAMADI', THEME.dim);
+};
 
 function startFlip(chosen) {
   if (flip && flip.active) return;
@@ -156,6 +210,10 @@ function finishFlip() {
 
 function claimShield() {
   if (flip && flip.active) return;
+  if (shieldAdPending) {
+    showToast('REKLAM AÇILIYOR', THEME.shield);
+    return;
+  }
   if (S.shieldReady) {
     showToast('KALKAN HAZIR', THEME.shield);
     return;
@@ -168,11 +226,7 @@ function claimShield() {
     showToast('ÖNCE 1 KEZ BİL', THEME.dim);
     return;
   }
-  S.shieldReady = true;
-  S.shieldOfferUsed = true;
-  S.shieldsBought++;
-  save();
-  showToast('KALKAN HAZIR', THEME.shield, 'plain', 1400);
+  requestRewardedShield();
 }
 
 // ─── DÜZEN ───────────────────────────────────────────────────────────────────
@@ -343,6 +397,7 @@ function drawShieldButton(x, y, r, label, disabled) {
 }
 
 function shieldLabel() {
+  if (shieldAdPending) return 'REKLAM...';
   if (S.shieldReady) return 'KALKAN HAZIR';
   if (S.shieldOfferUsed) return 'KALKAN KULLANILDI';
   if (S.streak > 0) return 'REKLAMLA KALKAN';

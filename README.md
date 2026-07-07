@@ -24,7 +24,7 @@ saklanır.
   simülasyon, gerçek backend'e geçmeye hazır
 - Mobil dokunmatik + masaüstü klavye (`Y` Yazı, `T` Tura, `K`/`R` Kalkan)
 - PWA: ana ekrana ekleyip tam ekran oynanabilir
-- iOS native sarmalayıcı (`ios-app/`) — tamamen çevrimdışı `WKWebView`
+- iOS native sarmalayıcı (`ios-app/`) — yerel `WKWebView` oyun + AdMob ödüllü reklam
 
 ## Çalıştırma
 
