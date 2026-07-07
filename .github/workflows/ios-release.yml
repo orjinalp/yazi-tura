@@ -66,6 +66,7 @@ jobs:
           echo "API anahtarı hazır ($(wc -c < fastlane/AuthKey.p8) bayt)."
 
       - name: Apple Distribution sertifikasını içe aktar
+        if: ${{ inputs.lane != 'metadata' }}
         working-directory: ios-app
         env:
           IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
