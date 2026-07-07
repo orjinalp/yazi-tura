@@ -1,28 +1,28 @@
 # Yazı Tura
 
-Canvas tabanlı basit ve şık bir yazı-tura (coin flip) oyunu. Bir taraf seç,
-parayı at, dönerek düşsün. Doğru bildikçe serin büyür, potun katlanır; istediğin
-an çekilip kasanı büyütürsün. Tüm ilerleme `localStorage` ile cihazda saklanır.
+Canvas tabanlı hızlı bir yazı-tura tahmin oyunu. Bir taraf seç, sonucu bekle,
+doğru bildikçe üst üste serini büyüt. Tüm ilerleme `localStorage` ile cihazda
+saklanır.
 
 ## Nasıl oynanır
 
-- Yeni tura başlamak (seri 0'dan ilk tahmin) **kasadan 1$ giriş ücreti** alır;
-  oyuna **1$** kasayla başlarsın.
-- **Yazı** ya da **Tura** seç. Doğru bilirsen **seri** büyür ve **pot ikiye
-  katlanır**: `pot = 2^seri` → seri 8'de `256$`, seri 9'da `512$`.
-- **ÇEKİL**: biriken potu **kasaya** aktarır (güvenli kâr), seri sıfırlanır.
-- Yanlış bilirsen **pot gider**, seri sıfırlanır.
-- **REKLAM İZLE** (dummy): kasaya **+1$** ekler (kasa biterse buradan devam).
+- **Yazı** ya da **Tura** seç.
+- Doğru bilirsen **üst üste** sayacın artar.
+- İlk doğru tahminden sonra **reklam izleyerek kalkan** alabilirsin.
+- Kalkan, aynı seri içinde bir kez çalışır: yanılırsan serin bozulmaz ve kalkan
+  tükenir.
+- Kalkan hakkı aynı seri içinde yalnızca bir kez alınır. Seri sıfırlanınca yeni
+  seri için tekrar açılır.
 
 ## Özellikler
 
-- Animasyonlu para dönüşü (canvas)
-- Seri bazlı katlanan ödül, kasa ve rekor takibi (`localStorage`)
+- Animasyonlu yazı-tura sahnesi (canvas)
+- Üst üste bilme, rekor seri ve kalkan istatistikleri (`localStorage`)
 - Hamburger menü: Liderlik Tablosu, Ayarlar, Gizlilik Politikası, Kullanım
   Koşulları, Destek, Hakkında
-- Liderlik tablosu için servis katmanı (`leaderboard.js`) — şimdilik dummy, gerçek
-  backend'e geçmeye hazır
-- Mobil dokunmatik + masaüstü klavye (`Y` Yazı, `T` Tura, `C` Çekil, `R` Reklam)
+- Liderlik tablosu için servis katmanı (`leaderboard.js`) — şimdilik yerel
+  simülasyon, gerçek backend'e geçmeye hazır
+- Mobil dokunmatik + masaüstü klavye (`Y` Yazı, `T` Tura, `K`/`R` Kalkan)
 - PWA: ana ekrana ekleyip tam ekran oynanabilir
 - iOS native sarmalayıcı (`ios-app/`) — tamamen çevrimdışı `WKWebView`
 
@@ -44,7 +44,7 @@ python3 -m http.server 8000
 ├── index.html          # sayfa iskeleti + menü DOM
 ├── game.js             # oyun mantığı ve canvas çizimi
 ├── menu.js             # hamburger menü + sayfalar + liderlik UI
-├── leaderboard.js      # liderlik servisi (dummy, backend'e hazır)
+├── leaderboard.js      # liderlik servisi (yerel simülasyon)
 ├── style.css           # sayfa ve menü stilleri
 ├── site.webmanifest    # PWA manifesti
 ├── favicon.ico, icons/ # ikonlar

@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#1a2444">
 <title>Yazi Tura Screenshot Source</title>
 <link rel="stylesheet" href="../style.css?v=screenshot">
+<style>
+  #menuPanel { animation: none !important; transform: translateX(0) !important; }
+</style>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
@@ -26,17 +29,15 @@
 </div>
 
 <script>
-  localStorage.setItem('yazitura_v2', JSON.stringify({
-    kasa: 64,
-    pot: 16,
+  localStorage.setItem('yazitura_v3', JSON.stringify({
     streak: 4,
     best: 6,
     total: 18,
     wins: 12,
-    cashedOut: 48,
-    cashOutCount: 3,
-    bestCashout: 32,
-    adsWatched: 1
+    shieldsBought: 2,
+    shieldsUsed: 1,
+    shieldReady: true,
+    shieldOfferUsed: true
   }));
 </script>
 <script src="../leaderboard.js?v=screenshot"></script>
@@ -47,7 +48,7 @@
     setTimeout(() => {
       const mode = new URLSearchParams(window.location.search).get('mode') || 'main';
       if (typeof showToast === 'function') {
-        showToast('Doğru! Pot 16$', '#51cf66', 'plain', 60 * 60 * 1000);
+        showToast('Kalkan hazır', '#74c0fc', 'plain', 60 * 60 * 1000);
       }
       if (mode === 'menu') {
         document.getElementById('menuBtn').click();

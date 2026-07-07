@@ -1,1 +1,1 @@
-İlk sürüm.
+Üst üste bilme akışı ve tek kullanımlık kalkan eklendi.

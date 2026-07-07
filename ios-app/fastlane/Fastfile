@@ -1,6 +1,7 @@
 require "fileutils"
 require "shellwords"
 
+opt_out_usage
 default_platform(:ios)
 
 APP_ID = "com.orjinalp.yazitura"
@@ -10,22 +11,49 @@ REPO_ROOT = File.expand_path("../..", FASTLANE_PATH)
 METADATA_PATH = File.join(FASTLANE_PATH, "metadata")
 SCREENSHOTS_PATH = File.join(FASTLANE_PATH, "screenshots")
 
+def screenshot_dimensions(path)
+  output = `/usr/bin/sips -g pixelWidth -g pixelHeight #{path.shellescape} 2>/dev/null`
+  width = output[/pixelWidth:\s*(\d+)/, 1]&.to_i
+  height = output[/pixelHeight:\s*(\d+)/, 1]&.to_i
+
+  unless width && height
+    FastlaneCore::UI.user_error!("Could not read App Store screenshot dimensions: #{path}")
+  end
+
+  [width, height]
+end
+
 def prepare_store_screenshots
   target_dir = File.join(SCREENSHOTS_PATH, "tr")
-  FileUtils.mkdir_p(target_dir)
 
-  {
-    "01-main-6.5.png" => "01-main-iphone-6.5.png",
-    "02-menu-6.5.png" => "02-menu-iphone-6.5.png",
-    "01-main-6.9.png" => "03-main-iphone-6.9.png",
-    "02-menu-6.9.png" => "04-menu-iphone-6.9.png",
-    "ipad-01-main.png" => "iPad Pro (12.9-inch) (3rd generation)-01-main.png",
-    "ipad-02-menu.png" => "iPad Pro (12.9-inch) (3rd generation)-02-menu.png"
-  }.each do |source, target|
+  screenshots = {
+    "01-main-6.5.png" => { target: "01-main-iphone-6.5.png", width: 1242, height: 2688 },
+    "02-menu-6.5.png" => { target: "02-menu-iphone-6.5.png", width: 1242, height: 2688 },
+    "01-main-6.9.png" => { target: "03-main-iphone-6.9.png", width: 1290, height: 2796 },
+    "02-menu-6.9.png" => { target: "04-menu-iphone-6.9.png", width: 1290, height: 2796 },
+    "ipad-01-main.png" => { target: "iPad Pro (12.9-inch) (3rd generation)-01-main.png", width: 2048, height: 2732 },
+    "ipad-02-menu.png" => { target: "iPad Pro (12.9-inch) (3rd generation)-02-menu.png", width: 2048, height: 2732 }
+  }
+
+  copy_jobs = screenshots.map do |source, spec|
     source_path = File.join(REPO_ROOT, "app-store", "screenshots", source)
     FastlaneCore::UI.user_error!("Missing App Store screenshot: #{source_path}") unless File.exist?(source_path)
 
-    FileUtils.cp(source_path, File.join(target_dir, target))
+    expected = [spec[:width], spec[:height]]
+    actual = screenshot_dimensions(source_path)
+    unless actual == expected
+      FastlaneCore::UI.user_error!(
+        "Invalid App Store screenshot dimensions for #{source}: expected #{expected.join('x')}, got #{actual.join('x')}"
+      )
+    end
+
+    [source_path, File.join(target_dir, spec[:target])]
+  end
+
+  FileUtils.rm_rf(target_dir)
+  FileUtils.mkdir_p(target_dir)
+  copy_jobs.each do |source_path, target_path|
+    FileUtils.cp(source_path, target_path)
   end
 end
 

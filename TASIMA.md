@@ -76,7 +76,7 @@ Eski Pizza Empire kalıntıları temizlendi:
 - ✅ **`docs/privacy.html`** — Yazı Tura gizlilik politikasına güncellendi
   (oyun içi menüdeki metinle tutarlı).
 - ✅ **Web ikonları** — referanssız pizza görselleri (`apple-touch-*`, `splash/`,
-  `favicon-16/32`) kaldırıldı; jeton temalı `apple-touch-icon.png` eklendi.
+  `favicon-16/32`) kaldırıldı; uygulama ikonları eklendi.
   Kalan ikonlar: `favicon.ico`, `icons/icon-192`, `icons/icon-512`,
   `icons/apple-touch-icon`.
 - ✅ **Yinelenen `ios/` klasörü** — kaldırıldı; tek ikon seti
@@ -84,6 +84,6 @@ Eski Pizza Empire kalıntıları temizlendi:
 
 ## 6. Yayın öncesi tek not (App Store)
 
-- **Yaş sınırı** — oyun sanal parayla yazı-tura mekaniği içeriyor; Apple yaş
-  formunda "Simulated Gambling" sorusuna dürüst yanıt ver (genelde 17+).
-  Gerçek para söz konusu değil; bu, Kullanım Koşulları'nda belirtilmiştir.
+- **Yaş sınırı** — oyun üst üste doğru tahmin yapmaya dayalı casual bir deneyim
+  olarak konumlanır. Listeleme ve kullanım koşullarında nakde çevrilebilir ödül
+  veya finansal değerli unsur bulunmadığı açıkça belirtilmiştir.

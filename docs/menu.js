@@ -1,24 +1,20 @@
 // ─── Menü ────────────────────────────────────────────────────────────────────
 // Hamburger menü + App Store için zorunlu sayfalar (Gizlilik, Koşullar, Destek)
-// ve Liderlik Tablosu (dummy UI, leaderboard.js servisini kullanır).
+// ve Liderlik Tablosu.
 
 (function () {
   const APP_NAME = 'Yazı Tura';
   const APP_VERSION = '1.0.0';
 
   const overlay = document.getElementById('menuOverlay');
-  const panel   = document.getElementById('menuPanel');
   const body    = document.getElementById('menuBody');
   const titleEl = document.getElementById('menuTitle');
   const backBtn = document.getElementById('menuBack');
   const closeBtn = document.getElementById('menuClose');
   const menuBtn = document.getElementById('menuBtn');
 
-  // para biçimi (game.js'teki money varsa onu kullan, yoksa yerel)
-  function fmtMoney(n) {
-    if (typeof window.money === 'function') return window.money(n);
-    const g = Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return g + '$';
+  function fmtStreak(n) {
+    return (Number(n) || 0) + ' üst üste';
   }
   function state() { return (typeof window.S === 'object' && window.S) ? window.S : null; }
 
@@ -36,7 +32,6 @@
   menuBtn.addEventListener('click', open);
   closeBtn.addEventListener('click', close);
   backBtn.addEventListener('click', showRoot);
-  // panel dışına (karartma) tıklayınca kapat
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
   // ─── Kök menü ───────────────────────────────────────────────────────────────
@@ -80,16 +75,16 @@
     const total = s.total || 0;
     const wins = s.wins || 0;
     const hitRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+    const shieldStatus = s.shieldReady ? 'Hazır' : (s.shieldOfferUsed ? 'Kullanıldı' : 'Yok');
 
     const stats = [
-      { ico: '💰', label: 'Rekor çekiliş',  value: fmtMoney(s.bestCashout || 0), accent: true },
-      { ico: '🏦', label: 'Toplam çekilen', value: fmtMoney(s.cashedOut || 0) },
-      { ico: '✋', label: 'Çekiliş sayısı',  value: (s.cashOutCount || 0) + ' kez' },
-      { ico: '📺', label: 'İzlenen reklam',  value: (s.adsWatched || 0) + ' kez' },
-      { ico: '🔥', label: 'Rekor seri',      value: (s.best || 0) },
-      { ico: '🎯', label: 'İsabet (strike)', value: wins + ' / ' + total },
-      { ico: '📈', label: 'İsabet oranı',    value: '%' + hitRate },
-      { ico: '💵', label: 'Kasa',            value: fmtMoney(s.kasa || 0) },
+      { ico: '🔥', label: 'Rekor', value: fmtStreak(s.best || 0), accent: true },
+      { ico: '📍', label: 'Güncel seri', value: fmtStreak(s.streak || 0) },
+      { ico: '🛡️', label: 'Kalkan durumu', value: shieldStatus },
+      { ico: '📺', label: 'Alınan kalkan', value: (s.shieldsBought || 0) + ' kez' },
+      { ico: '✅', label: 'Kalkan kurtardı', value: (s.shieldsUsed || 0) + ' kez' },
+      { ico: '🎯', label: 'İsabet', value: wins + ' / ' + total },
+      { ico: '📈', label: 'İsabet oranı', value: '%' + hitRate },
     ];
 
     const cards = stats.map((st) => `
@@ -103,7 +98,7 @@
       <div class="profile-hero">
         <div class="profile-avatar">👤</div>
         <div class="profile-name">Sen</div>
-        <div class="profile-sub">${total} atış • rekor seri ${s.best || 0}</div>
+        <div class="profile-sub">${total} atış • rekor ${fmtStreak(s.best || 0)}</div>
       </div>
       <div class="stat-grid">${cards}</div>
       <div class="page"><p class="muted">İstatistikler bu cihazda yerel olarak tutulur.</p></div>`;
@@ -131,11 +126,10 @@
       return `<li class="lb-row${e.you ? ' lb-you' : ''}">
         <span class="lb-rank${cls}">${e.rank}</span>
         <span class="lb-name">${escapeHtml(e.name)}</span>
-        <span class="lb-score">${fmtMoney(e.score)}</span>
+        <span class="lb-score">${fmtStreak(e.score)}</span>
       </li>`;
     };
     const rows = top.map(rowHtml).join('');
-    // Oyuncu ilk 20'de değilse ayrıca alta ekle
     const youExtra = you.rank > TOPN ? `<li class="lb-sep">···</li>` + rowHtml(you) : '';
 
     body.innerHTML = `
@@ -143,13 +137,12 @@
         <div class="lb-title">🏆 Haftalık Yarış</div>
         <div class="lb-timer">Sıfırlanmasına <b id="lbCd">${fmtCountdown(board.msLeft)}</b></div>
         <div class="lb-you-line">Sıran: <b>${you.rank}</b> / ${board.total}
-          &nbsp;•&nbsp; Bu hafta: <b>${fmtMoney(you.score)}</b></div>
+          &nbsp;•&nbsp; Bu hafta: <b>${fmtStreak(you.score)}</b></div>
       </div>
       <ul class="lb-list">${rows}${youExtra}</ul>
-      <div class="page"><p class="muted">Sıralama bu haftaki kazancına göredir ve
-      her Pazar gece yarısı sıfırlanır.</p></div>`;
+      <div class="page"><p class="muted">Sıralama bu haftaki en iyi üst üste bilme
+      rekoruna göredir ve her Pazar gece yarısı sıfırlanır.</p></div>`;
 
-    // geri sayımı canlı tut (menü açık kaldıkça)
     if (lbTimer) clearInterval(lbTimer);
     lbTimer = setInterval(() => {
       const cd = document.getElementById('lbCd');
@@ -170,16 +163,19 @@
         <span>İlerlemeyi sıfırla</span>
         <button class="btn red" id="resetBtn">Sıfırla</button>
       </div>
-      <div class="page"><p class="muted">Sıfırlama kasanı, serini ve rekorunu siler; geri alınamaz.</p></div>`;
+      <div class="page"><p class="muted">Sıfırlama serini, rekorunu ve kalkan istatistiklerini siler; geri alınamaz.</p></div>`;
 
     const t = document.getElementById('soundToggle');
     t.addEventListener('click', () => {
       const on = t.classList.toggle('on');
-      localStorage.setItem('yt_sound', on ? 'on' : 'off'); // dummy: ses motoru henüz yok
+      localStorage.setItem('yt_sound', on ? 'on' : 'off');
     });
     document.getElementById('resetBtn').addEventListener('click', () => {
       if (confirm('Tüm ilerlemen silinsin mi? Bu işlem geri alınamaz.')) {
         localStorage.removeItem('yazitura_v2');
+        localStorage.removeItem('yazitura_v3');
+        localStorage.removeItem('yt_lb_v1');
+        localStorage.removeItem('yt_lb_v2');
         location.reload();
       }
     });
@@ -196,13 +192,13 @@
     privacy: `<div class="page">
       <p class="muted">Son güncelleme: 2026</p>
       <h3>Gizlilik Politikası</h3>
-      <p>${APP_NAME}, kişisel verilerini toplamaz. Oyun ilerlemen (kasa, seri,
-      rekor) yalnızca cihazının yerel depolamasında (localStorage) tutulur ve
-      hiçbir sunucuya gönderilmez.</p>
+      <p>${APP_NAME}, kişisel verilerini toplamaz. Oyun ilerlemen (seri, rekor
+      ve kalkan istatistikleri) yalnızca cihazının yerel depolamasında
+      (localStorage) tutulur ve hiçbir sunucuya gönderilmez.</p>
       <h3>Reklamlar</h3>
-      <p>Uygulamadaki “Reklam İzle” özelliği şu an bir gösterimdir (dummy) ve
-      üçüncü taraf reklam ağı çalıştırmaz. İleride gerçek reklam ağı entegre
-      edilirse, ilgili ağın veri işleme koşulları bu politikada belirtilecektir.</p>
+      <p>Uygulamadaki reklam izleme akışı şu an bir gösterimdir ve üçüncü taraf
+      reklam ağı çalıştırmaz. İleride gerçek reklam ağı entegre edilirse, ilgili
+      ağın veri işleme koşulları bu politikada belirtilecektir.</p>
       <h3>Çocukların Gizliliği</h3>
       <p>Uygulama, 13 yaş altı çocuklardan bilerek veri toplamaz.</p>
       <h3>İletişim</h3>
@@ -215,9 +211,9 @@
       <h3>Kullanım Koşulları</h3>
       <p>Bu uygulamayı kullanarak aşağıdaki koşulları kabul etmiş olursunuz.</p>
       <h3>Eğlence Amaçlıdır</h3>
-      <p>${APP_NAME} yalnızca bir eğlence oyunudur. Oyun içindeki “kasa”, “pot”
-      ve para birimleri sanaldır; gerçek para değeri taşımaz, gerçek parayla
-      alınıp satılamaz ve gerçek kumar değildir.</p>
+      <p>${APP_NAME} yalnızca üst üste doğru tahmin yapmaya dayalı bir eğlence
+      oyunudur. Uygulamada nakde çevrilebilir ödül veya finansal değerli varlık
+      bulunmaz.</p>
       <h3>Sorumluluk</h3>
       <p>Uygulama “olduğu gibi” sunulur. Kullanımdan doğabilecek dolaylı
       zararlardan geliştirici sorumlu tutulamaz.</p>
@@ -236,8 +232,9 @@
 
     about: `<div class="page">
       <h3>${APP_NAME}</h3>
-      <p>Seri yaptıkça pot ikiye katlanan bir yazı-tura şans oyunu.
-      Doğru bildikçe kasanı büyüt, istediğin an çekil.</p>
+      <p>Üst üste doğru tahmin yapmaya odaklanan hızlı bir yazı-tura oyunu.
+      İlk doğru tahminden sonra reklam izleyerek tek kullanımlık kalkan
+      alabilirsin.</p>
       <p class="muted">Sürüm ${APP_VERSION}</p>
     </div>`,
   };

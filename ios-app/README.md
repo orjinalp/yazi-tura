@@ -69,7 +69,7 @@ Windows'ta tarayıcıdan yaparsın.
 
 **Bir kerelik hazırlık (tarayıcıda):**
 
-1. **Apple Developer Program** üyeliğinin aktif olduğundan emin ol ($99/yıl).
+1. **Apple Developer Program** üyeliğinin aktif olduğundan emin ol.
 2. App Store Connect ▸ **Users and Access ▸ Integrations (Keys)** ▸ **App Store
    Connect API** ▸ **+** ile bir anahtar üret (rol: *App Manager* yeterli).
    - **Key ID** ve **Issuer ID**'yi not al.

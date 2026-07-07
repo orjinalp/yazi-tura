@@ -4,29 +4,29 @@
 Yazı Tura
 
 ## Alt Başlık (Subtitle) — max 30 karakter
-Seriyi yap, potu katla, çekil
+Üst üste bil, rekor yap
 
 ## Anahtar Kelimeler (Keywords) — max 100 karakter, virgülle
-yazı tura,para at,jeton,şans,seri,coin flip,refleks,eğlence,casual,kasa,offline,oyun
+yazı tura,tahmin,seri,üst üste,refleks,eğlence,casual,rekor,kalkan,offline,oyun
 
 ## Tanıtım Metni (Promotional Text) — max 170 karakter
-Yazı mı, tura mı? Doğru bildikçe potun ikiye katlanır. İstediğin an çekil, kasanı büyüt — nereye kadar cesaret edebilirsin?
+Yazı mı, tura mı? Doğru bildikçe serin büyür. Kalkanını hazırla, rekorunu koru.
 
 ## Açıklama (Description)
-Yazı Tura — basit ama tutku yaratan bir şans ve seri oyunu!
+Yazı Tura — üst üste doğru tahmin yapmaya odaklanan sade ve hızlı bir oyun.
 
-Bir taraf seç: Yazı ya da Tura. Doğru bilirsen serin büyür ve potun İKİYE KATLANIR. Seri 8'de 256$, seri 9'da 512$… Kaybetmeden önce çekil ve biriken potu kasana aktar. Ne kadar açgözlü olacağın sana kalmış: bir el daha mı, yoksa güvenli kâr mı?
+Bir taraf seç: Yazı ya da Tura. Doğru tahminlerin serini büyütür, rekorun yükselir. İlk doğru tahminden sonra tek kullanımlık kalkan hakkı açılır. Kalkan, bir sonraki yanılmanda serini korur ve sonra tükenir. Aynı seri içinde yalnızca bir kez kullanılabilir; seri sıfırlanınca yeni hakkın açılır.
 
 ÖZELLİKLER
 • Tek dokunuşla oynanış — Yazı ya da Tura
-• Her doğru tahminde pot ikiye katlanır (2, 4, 8, 16, … katlanarak büyür)
-• İstediğin an ÇEKİL ile potu güvene al
-• Kasa, güncel seri ve rekor takibi
-• Liderlik tablosu
-• Akıcı, şık tasarım ve tatmin edici para animasyonu
+• Üst üste doğru tahmin sayacı
+• Tek kullanımlık kalkan mekaniği
+• Güncel seri, rekor seri ve isabet takibi
+• Haftalık rekor tablosu
+• Akıcı ve şık animasyonlar
 • Tamamen çevrimdışı — internet gerekmez
 
-Not: Oyun içindeki tüm para birimleri (kasa, pot) sanaldır; gerçek para değeri taşımaz ve gerçek parayla oynanmaz.
+Not: Uygulama yalnızca eğlence amaçlıdır; finansal değer taşıyan veya nakde çevrilebilen hiçbir unsur içermez.
 
 ## Destek URL'si (Support URL) — ZORUNLU
 https://yazitura.alpcan.dev/support.html
@@ -51,13 +51,11 @@ https://yazitura.alpcan.dev/privacy.html
 - `app-store/screenshots/02-menu-6.9.png` (1290x2796)
 
 ## Kategori
-Birincil: Games  → Alt tür önerisi: Casual
+Birincil: Games → Alt tür önerisi: Casual
 
 ## Yaş Sınırı (Age Rating)
-Oyun, sanal parayla bir "yazı tura" (şans/simüle kumar) mekaniği içerir. Apple'ın
-yaş derecelendirme formunda "Simulated Gambling" (Simüle Kumar) sorusuna dürüst
-yanıt ver — bu genellikle **17+** dereceye yol açar. Gerçek para söz konusu
-olmadığından Kullanım Koşulları'nda bu açıkça belirtilmiştir.
+Oyun, üst üste doğru tahmin yapmaya dayalı sade bir casual deneyimdir. Finansal
+değer taşıyan veya nakde çevrilebilen hiçbir unsur içermez.
 
 ## App Privacy
 "Data Not Collected" — oyun veriyi yalnızca cihazda (localStorage) saklar; hiçbir
